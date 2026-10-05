@@ -1,0 +1,2812 @@
+/* ===== Catalogo de Servicos - gerenciador (Ferramentas) ===== */
+/* Todas as classes sao prefixadas com catalogoeformularios- para nao vazar estilo. */
+
+/* ---------- Shell: painel lateral + area principal ---------- */
+.catalogoeformularios-app {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    width: 100%;
+    min-height: 600px;
+    color: #333;
+}
+
+/* ---------- Divisao: gerenciador (topo) + previa nativa (base) ---------- */
+.catalogoeformularios-split {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: calc(100vh - 150px);   /* ajuste o 150px conforme sobra/falta espaco */
+    min-height: 560px;
+}
+.catalogoeformularios-split > .catalogoeformularios-app {
+    flex: 1 1 50%;                 /* proporcao do gerenciador (topo) */
+    min-height: 0;
+    overflow: auto;                /* o gerenciador rola dentro da sua area */
+}
+/* Dentro do split a arvore acompanha a rolagem do gerenciador (sem sticky no viewport). */
+.catalogoeformularios-split .catalogoeformularios-arvore {
+    position: static;
+    max-height: none;
+}
+.catalogoeformularios-preview {
+    flex: 1 1 50%;                 /* proporcao da previa (base) */
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.catalogoeformularios-preview-topo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+.catalogoeformularios-preview-titulo {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+.catalogoeformularios-preview-status {
+    font-size: 11px;
+    color: #999;
+    font-style: italic;
+}
+.catalogoeformularios-preview-frame {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    display: block;
+    background: #fff;
+}
+
+/* ---------- Previa minimizada: o gerenciador ocupa a tela inteira ---------- */
+.catalogoeformularios-split.catalogoeformularios-preview-minimizado > .catalogoeformularios-app {
+    flex: 1 1 auto;
+}
+.catalogoeformularios-split.catalogoeformularios-preview-minimizado .catalogoeformularios-preview {
+    flex: 0 0 auto;
+    min-height: 0;
+}
+.catalogoeformularios-split.catalogoeformularios-preview-minimizado .catalogoeformularios-preview-frame {
+    display: none;
+}
+.catalogoeformularios-split.catalogoeformularios-preview-minimizado #cat-preview-recarregar {
+    display: none;
+}
+
+.catalogoeformularios-app * {
+    box-sizing: border-box;
+}
+
+/* ---------- Painel lateral (arvore) ---------- */
+.catalogoeformularios-arvore {
+    flex: 0 0 470px;
+    max-width: 470px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 160px);
+    position: sticky;
+    top: 12px;
+    align-self: flex-start;
+}
+
+.catalogoeformularios-arvore-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 6px 6px 0 0;
+}
+.catalogoeformularios-arvore-topo-acoes {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.catalogoeformularios-arvore-titulo {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.catalogoeformularios-arvore-busca {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.catalogoeformularios-arvore-corpo {
+    overflow-y: auto;
+    padding: 6px 4px 12px 4px;
+    flex: 1;
+}
+
+/* No da arvore (categoria) */
+.catalogoeformularios-no-cab {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: #495057;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.catalogoeformularios-no-cab:hover {
+    background: #f8f9fa;
+}
+
+.catalogoeformularios-no-cab.ativo {
+    background: #e8f4fc;
+    font-weight: 600;
+    color: #333;
+}
+
+.catalogoeformularios-no-toggle {
+    width: 16px;
+    flex-shrink: 0;
+    color: #adb5bd;
+    display: inline-flex;
+    justify-content: center;
+}
+
+.catalogoeformularios-no-rotulo {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.catalogoeformularios-no-rotulo i {
+    color: #5b6b8c;
+    flex-shrink: 0;
+}
+
+.catalogoeformularios-no-filhos {
+    margin-left: 14px;
+    border-left: 1px dashed #e8e8e8;
+    padding-left: 4px;
+}
+
+/* Formulario na arvore (folha) */
+.catalogoeformularios-no-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px 3px 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #555;
+}
+
+.catalogoeformularios-no-form:hover {
+    background: #f8f9fa;
+}
+
+.catalogoeformularios-no-form.ativo {
+    background: #fdf3e3;
+    color: #333;
+    font-weight: 600;
+}
+
+.catalogoeformularios-no-form i {
+    color: #c98a36;
+    flex-shrink: 0;
+}
+
+.catalogoeformularios-no-form .ponto {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.catalogoeformularios-no-form .ponto.on { background: #198754; }
+.catalogoeformularios-no-form .ponto.off { background: #adb5bd; }
+
+/* ---------- Area principal ---------- */
+.catalogoeformularios-main {
+    flex: 1;
+    min-width: 0;
+    padding: 0 0 24px 0;
+}
+
+.catalogoeformularios-main .catalogoeformularios-cat-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.catalogoeformularios-cat-trilha {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.catalogoeformularios-trilha-item {
+    cursor: pointer;
+    color: #6c757d;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.catalogoeformularios-trilha-item:hover { color: #333; text-decoration: underline; }
+.catalogoeformularios-trilha-item.atual { color: #333; cursor: default; text-decoration: none; }
+.catalogoeformularios-trilha-sep { color: #adb5bd; font-weight: 400; }
+
+.catalogoeformularios-cat-expandir {
+    margin-right: auto;   /* cola o botao ao lado do titulo, empurrando as acoes pra direita */
+    flex-shrink: 0;
+}
+
+.catalogoeformularios-cat-acoes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ---------- Botoes ---------- */
+.catalogoeformularios-app .catalogoeformularios-btn,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    color: #495057;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.catalogoeformularios-app .catalogoeformularios-btn:hover,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn:hover { background: #f0f0f0; }
+
+.catalogoeformularios-app .catalogoeformularios-btn-primario,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn-primario {
+    background: #e5a54b;
+    border-color: #e5a54b;
+    color: #fff;
+}
+
+.catalogoeformularios-app .catalogoeformularios-btn-primario:hover,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn-primario:hover { filter: brightness(0.96); }
+
+.catalogoeformularios-app .catalogoeformularios-btn-perigo,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn-perigo {
+    background: #fff;
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.catalogoeformularios-app .catalogoeformularios-btn-perigo:hover,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn-perigo:hover { background: rgba(220, 53, 69, 0.08); }
+
+.catalogoeformularios-app .catalogoeformularios-btn:disabled,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.catalogoeformularios-app .catalogoeformularios-btn-icone,
+.catalogoeformularios-arvore .catalogoeformularios-btn-icone,
+.catalogoeformularios-preview-topo .catalogoeformularios-btn-icone,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn-icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #fff;
+    color: #6c757d;
+    cursor: pointer;
+}
+
+.catalogoeformularios-app .catalogoeformularios-btn-icone:hover,
+.catalogoeformularios-arvore .catalogoeformularios-btn-icone:hover,
+.catalogoeformularios-preview-topo .catalogoeformularios-btn-icone:hover,
+.catalogoeformularios-modal-overlay .catalogoeformularios-btn-icone:hover { background: #f8f9fa; color: #333; }
+
+/* A previa fica fora de .catalogoeformularios-app, entao precisa das normalizacoes proprias. */
+.catalogoeformularios-preview,
+.catalogoeformularios-preview * { box-sizing: border-box; }
+
+.catalogoeformularios-preview-topo { gap: 6px; }
+
+.catalogoeformularios-preview-topo .catalogoeformularios-btn-icone {
+    flex: 0 0 auto;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: none;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.catalogoeformularios-preview-topo .catalogoeformularios-btn-icone i {
+    line-height: 1;
+    font-size: 14px;
+}
+.catalogoeformularios-preview-topo .catalogoeformularios-btn-icone:focus,
+.catalogoeformularios-preview-topo .catalogoeformularios-btn-icone:focus-visible {
+    border-color: #e5a54b;
+    box-shadow: 0 0 0 2px rgba(229, 165, 75, 0.25);
+}
+
+.catalogoeformularios-acoes-linha { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Grid de cards ---------- */
+.catalogoeformularios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.catalogoeformularios-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 16px;
+    min-height: 84px;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.catalogoeformularios-card.clicavel { cursor: pointer; }
+.catalogoeformularios-card.clicavel:hover { border-color: #c9ccd0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+
+.catalogoeformularios-card-icone {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f0f4fa;
+    color: #5b6b8c;
+    font-size: 22px;
+}
+
+.catalogoeformularios-card-icone.form { background: #fdf3e3; color: #c98a36; }
+
+.catalogoeformularios-card-corpo { flex: 1; min-width: 0; }
+
+.catalogoeformularios-card-nome {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.catalogoeformularios-card-meta {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.catalogoeformularios-card-acoes {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: inline-flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.catalogoeformularios-card:hover .catalogoeformularios-card-acoes { opacity: 1; }
+
+/* Badges */
+.catalogoeformularios-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+}
+.catalogoeformularios-badge-ativo { background: rgba(25, 135, 84, 0.12); color: #198754; }
+.catalogoeformularios-badge-inativo { background: rgba(108, 117, 125, 0.12); color: #6c757d; }
+.catalogoeformularios-badge-rascunho { background: rgba(255, 193, 7, 0.18); color: #997404; }
+
+/* Estado vazio / carregando */
+.catalogoeformularios-vazio {
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+    padding: 40px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.catalogoeformularios-vazio i { font-size: 28px; color: #cfd4da; }
+
+.catalogoeformularios-secao-titulo {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6c757d;
+    margin: 18px 0 10px 0;
+}
+
+/* ---------- Visao agrupada: categoria -> formularios ---------- */
+.catalogoeformularios-grupos {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.catalogoeformularios-grupo {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.catalogoeformularios-grupo-cab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e8e8e8;
+    cursor: pointer;
+}
+.catalogoeformularios-grupo-cab:hover { background: #f1f3f5; }
+
+.catalogoeformularios-grupo-icone {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: #f0f4fa;
+    color: #5b6b8c;
+    font-size: 16px;
+}
+
+.catalogoeformularios-grupo-nome {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.catalogoeformularios-grupo-contagem {
+    font-size: 11px;
+    color: #999;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.catalogoeformularios-grupo-acoes {
+    display: inline-flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.catalogoeformularios-grupo-cab:hover .catalogoeformularios-grupo-acoes { opacity: 1; }
+
+.catalogoeformularios-grupo-abrir {
+    flex-shrink: 0;
+    color: #adb5bd;
+    display: inline-flex;
+}
+
+.catalogoeformularios-grupo-chevron {
+    flex-shrink: 0;
+    width: 16px;
+    color: #adb5bd;
+    display: inline-flex;
+    justify-content: center;
+    transition: color 0.15s ease;
+}
+.catalogoeformularios-grupo-cab:hover .catalogoeformularios-grupo-chevron { color: #6c757d; }
+
+.catalogoeformularios-grupo-entrar {
+    flex-shrink: 0;
+    color: #6c757d;
+}
+
+.catalogoeformularios-grupo-corpo {
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.catalogoeformularios-grupo-vazio {
+    font-size: 12px;
+    color: #999;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.catalogoeformularios-grupo-sub {
+    font-size: 11px;
+    color: #6c757d;
+    padding: 6px 10px;
+    margin-top: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px dashed #eee;
+}
+.catalogoeformularios-grupo-sub:hover { color: #333; }
+
+.catalogoeformularios-grupo-solto { border-style: dashed; }
+
+/* Linha de formulario dentro de um grupo */
+.catalogoeformularios-form-linha {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.catalogoeformularios-form-linha:hover { background: #f8f9fa; }
+
+.catalogoeformularios-form-linha .ponto {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.catalogoeformularios-form-linha .ponto.on { background: #198754; }
+.catalogoeformularios-form-linha .ponto.off { background: #adb5bd; }
+
+.catalogoeformularios-form-linha-ic { color: #c98a36; flex-shrink: 0; }
+
+.catalogoeformularios-form-linha-nome {
+    font-size: 12.5px;
+    color: #333;
+    font-weight: 500;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.catalogoeformularios-form-linha-ent {
+    font-size: 11px;
+    color: #999;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.catalogoeformularios-form-linha-acoes {
+    display: inline-flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.catalogoeformularios-form-linha:hover .catalogoeformularios-form-linha-acoes { opacity: 1; }
+
+/* Perfis com acesso, exibidos na barra do formulario */
+.catalogoeformularios-form-perfis {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.catalogoeformularios-perfil-chip {
+    font-size: 10px;
+    font-weight: 600;
+    color: #495057;
+    background: #eef1f5;
+    border: 1px solid #dfe4ea;
+    border-radius: 10px;
+    padding: 1px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+.catalogoeformularios-form-perfis-icone {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    background: #eef1f5;
+    border: 1px solid #dfe4ea;
+    border-radius: 10px;
+    padding: 1px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    cursor: default;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+
+/* Contagem de formularios na arvore */
+.catalogoeformularios-no-contagem {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: #6c757d;
+    background: #eef0f2;
+    border-radius: 9px;
+    padding: 0 7px;
+    line-height: 16px;
+    margin-left: 4px;
+}
+
+/* Icones dentro dos badges de contagem da arvore */
+.catalogoeformularios-no-contagem i {
+    font-size: 11px;
+    line-height: 1;
+}
+
+/* Badge de subcategorias (tom levemente mais escuro para diferenciar) */
+.catalogoeformularios-no-contagem-sub {
+    color: #495057;
+    background: #e2e6ea;
+}
+
+.catalogoeformularios-cat-carregando {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #999;
+    font-size: 13px;
+    padding: 30px 0;
+}
+
+.ti-loader { animation: catalogoeformularios-spin 0.9s linear infinite; }
+@keyframes catalogoeformularios-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Builder do formulario ---------- */
+.catalogoeformularios-form-info {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+.catalogoeformularios-form-info .desc { font-size: 12px; color: #6c757d; margin-top: 4px; }
+.catalogoeformularios-form-info .resumo {
+    margin-top: 8px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: #6c757d;
+}
+
+.catalogoeformularios-secao {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    background: #fff;
+}
+
+.catalogoeformularios-secao-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px 14px;
+    border-radius: 6px 6px 0 0;
+}
+
+.catalogoeformularios-secao-nome {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.catalogoeformularios-secao-arrasta { cursor: grab; color: #adb5bd; }
+
+.catalogoeformularios-secao-body { padding: 8px 14px 14px 14px; min-height: 10px; }
+
+.catalogoeformularios-pergunta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    margin-top: 8px;
+    background: #fff;
+}
+.catalogoeformularios-pergunta:hover { background: #f8f9fa; }
+.catalogoeformularios-pergunta-arrasta { cursor: grab; color: #adb5bd; }
+.catalogoeformularios-pergunta-nome { flex: 1; font-size: 13px; color: #333; }
+.catalogoeformularios-pergunta-obrig { color: #dc3545; font-weight: 700; margin-left: 4px; }
+.catalogoeformularios-pergunta-tipo {
+    font-size: 11px;
+    color: #6c757d;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.catalogoeformularios-pergunta-cond {
+    font-size: 10px;
+    color: #055160;
+    background: rgba(13, 202, 240, 0.12);
+    border: 1px solid rgba(13, 202, 240, 0.3);
+    padding: 1px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+/* Drag-and-drop (SortableJS) */
+.catalogoeformularios-sortable-ghost { opacity: 0.4; }
+.catalogoeformularios-sortable-chosen { background: #fff7e8 !important; }
+.catalogoeformularios-secao-body.solta-vazia {
+    border: 1px dashed #dee2e6;
+    border-radius: 4px;
+    text-align: center;
+    color: #adb5bd;
+    font-size: 12px;
+    padding: 12px;
+}
+
+/* ---------- Modal proprio ---------- */
+.catalogoeformularios-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    z-index: 1080;
+    overflow-y: auto;
+}
+
+.catalogoeformularios-modal {
+    background: #fff;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    overflow: visible;
+}
+.catalogoeformularios-modal.grande { max-width: 760px; }
+
+.catalogoeformularios-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #dee2e6;
+}
+.catalogoeformularios-modal-titulo {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.catalogoeformularios-modal-fechar {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+}
+.catalogoeformularios-modal-fechar:hover { color: #333; }
+.catalogoeformularios-modal-body { padding: 18px; }
+.catalogoeformularios-modal-foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid #dee2e6;
+    background: #fafbfc;
+    border-radius: 0 0 8px 8px;
+}
+
+/* ---------- Abas dentro do modal (config do formulario) ---------- */
+.catalogoeformularios-abas {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid #dee2e6;
+    margin: -4px 0 14px 0;
+    flex-wrap: wrap;
+}
+.catalogoeformularios-aba {
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.catalogoeformularios-aba:hover { color: #333; }
+.catalogoeformularios-aba.ativa { color: #333; border-bottom-color: #e5a54b; }
+.catalogoeformularios-aba-conteudo { display: none; }
+.catalogoeformularios-aba-conteudo.ativa { display: block; }
+
+/* ---------- Campos de formulario no modal ---------- */
+.catalogoeformularios-modal .catalogoeformularios-campo { margin-bottom: 14px; }
+.catalogoeformularios-modal .catalogoeformularios-campo label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.catalogoeformularios-modal .catalogoeformularios-preview {
+    border: 1px dashed #dee2e6;
+    border-radius: 4px;
+    background: #fcfcfc;
+    padding: 10px;
+}
+.catalogoeformularios-modal .catalogoeformularios-preview .catalogoeformularios-input,
+.catalogoeformularios-modal .catalogoeformularios-preview .catalogoeformularios-select {
+    background: #fff;
+}
+
+.catalogoeformularios-modal .catalogoeformularios-campo .obrig { color: #dc3545; }
+
+.catalogoeformularios-modal .catalogoeformularios-input,
+.catalogoeformularios-modal .catalogoeformularios-select,
+.catalogoeformularios-modal textarea.catalogoeformularios-input,
+.catalogoeformularios-arvore .catalogoeformularios-input {
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 13px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    color: #333;
+    background: #fff;
+}
+
+.catalogoeformularios-modal .catalogoeformularios-input:focus,
+.catalogoeformularios-modal .catalogoeformularios-select:focus,
+.catalogoeformularios-modal textarea.catalogoeformularios-input:focus,
+.catalogoeformularios-arvore .catalogoeformularios-input:focus {
+    outline: none;
+    border-color: #e0b830;
+    box-shadow: 0 0 0 0.15rem rgba(240, 201, 70, 0.25);
+}
+
+.catalogoeformularios-modal .catalogoeformularios-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #495057;
+}
+.catalogoeformularios-modal .catalogoeformularios-check input[type="checkbox"] {
+    width: 1.15em;
+    height: 1.15em;
+    -webkit-appearance: none;
+    appearance: none;
+    border: 2px solid #d0d0d0;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease-in-out;
+    flex-shrink: 0;
+}
+.catalogoeformularios-modal .catalogoeformularios-check input[type="checkbox"]:hover { border-color: #e0b830; }
+.catalogoeformularios-modal .catalogoeformularios-check input[type="checkbox"]:checked { background: #f0c946; border-color: #e0b830; }
+.catalogoeformularios-modal .catalogoeformularios-check input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 4px;
+    height: 8px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Switch (ativar/desativar politica) */
+.catalogoeformularios-switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 20px;
+    flex-shrink: 0;
+}
+.catalogoeformularios-switch input { opacity: 0; width: 0; height: 0; }
+.catalogoeformularios-switch .trilho {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #ccc;
+    border-radius: 20px;
+    transition: 0.2s;
+}
+.catalogoeformularios-switch .trilho::before {
+    content: "";
+    position: absolute;
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+.catalogoeformularios-switch input:checked + .trilho { background: #f0c946; }
+.catalogoeformularios-switch input:checked + .trilho::before { transform: translateX(18px); }
+
+/* ---------- Editor de opcoes (lista/multipla/unica/caixas) ---------- */
+.catalogoeformularios-modal .catalogoeformularios-opcoes {
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    padding: 8px;
+}
+.catalogoeformularios-modal .catalogoeformularios-opcao {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.catalogoeformularios-modal .catalogoeformularios-opcao .catalogoeformularios-input { margin: 0; }
+
+/* ----- Condicionais por opcao ----- */
+.catalogoeformularios-modal .catalogoeformularios-opcao-bloco { margin-bottom: 6px; }
+.catalogoeformularios-modal .catalogoeformularios-opcao-bloco .catalogoeformularios-opcao { margin-bottom: 0; }
+
+.catalogoeformularios-modal .catalogoeformularios-cond-panel {
+    margin: 6px 0 2px 22px;
+    padding: 8px 10px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+.catalogoeformularios-modal .catalogoeformularios-cond-titulo {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 6px;
+}
+.catalogoeformularios-modal .catalogoeformularios-cond-vazio {
+    font-size: 11px;
+    color: #999;
+    padding: 4px 0;
+}
+.catalogoeformularios-modal .catalogoeformularios-cond-regras {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.catalogoeformularios-modal .catalogoeformularios-cond-regra {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.catalogoeformularios-modal .catalogoeformularios-cond-regra .catalogoeformularios-select {
+    flex: 1 1 90px;
+    min-width: 90px;
+    margin: 0;
+}
+.catalogoeformularios-modal .catalogoeformularios-cond-regra [data-r-alvo] {
+    flex: 2 1 140px;
+}
+.catalogoeformularios-modal .catalogoeformularios-cond-regra .catalogoeformularios-btn-icone {
+    flex: 0 0 auto;
+}
+
+/* ----- Visibilidade condicional por alvo (qualquer pergunta) ----- */
+.catalogoeformularios-modal .catalogoeformularios-vc-vazio {
+    font-size: 11px;
+    color: #999;
+    padding: 4px 0;
+}
+.catalogoeformularios-modal .catalogoeformularios-vc-regra {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+    padding: 6px 8px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+.catalogoeformularios-modal .catalogoeformularios-vc-regra .catalogoeformularios-select {
+    flex: 1 1 120px;
+    min-width: 110px;
+    margin: 0;
+}
+.catalogoeformularios-modal .catalogoeformularios-vc-regra .catalogoeformularios-input {
+    margin: 0;
+}
+.catalogoeformularios-modal .catalogoeformularios-vc-regra [data-vc-origem] {
+    flex: 2 1 160px;
+}
+.catalogoeformularios-modal .catalogoeformularios-vc-regra .catalogoeformularios-btn-icone {
+    flex: 0 0 auto;
+}
+.catalogoeformularios-modal .catalogoeformularios-vc-se {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    flex: 0 0 auto;
+}
+.catalogoeformularios-modal .catalogoeformularios-vc-logica {
+    flex: 0 0 auto !important;
+    max-width: 70px;
+    min-width: 60px !important;
+}
+
+.catalogoeformularios-modal .catalogoeformularios-erro {
+    font-size: 12px;
+    color: #dc3545;
+    margin-top: 8px;
+    min-height: 16px;
+}
+
+.catalogoeformularios-modal .catalogoeformularios-aviso {
+    font-size: 12px;
+    color: #664d03;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+/* ---------- Select com busca em tempo real ---------- */
+.catalogoeformularios-modal .catalogoeformularios-selbusca { position: relative; }
+.catalogoeformularios-modal .catalogoeformularios-selbusca-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.catalogoeformularios-modal .catalogoeformularios-selbusca-header i { color: #6c757d; flex-shrink: 0; }
+.catalogoeformularios-modal .catalogoeformularios-selbusca-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.catalogoeformularios-modal .catalogoeformularios-selbusca-dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    right: 0;
+    z-index: 1090;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    padding: 8px;
+}
+.catalogoeformularios-modal .catalogoeformularios-selbusca-search { margin-bottom: 8px; }
+.catalogoeformularios-modal .catalogoeformularios-selbusca-opcoes {
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+}
+.catalogoeformularios-modal .catalogoeformularios-selbusca-opcao {
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+.catalogoeformularios-modal .catalogoeformularios-selbusca-opcao:hover { background: #f8f9fa; }
+.catalogoeformularios-modal .catalogoeformularios-selbusca-opcao.selecionada { background: #e8f4fc; font-weight: 600; }
+
+/* ---------- Destinos ---------- */
+.catalogoeformularios-destino {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+.catalogoeformularios-destino-cab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 8px 12px;
+    border-radius: 6px 6px 0 0;
+}
+.catalogoeformularios-destino-nome { font-size: 13px; font-weight: 600; color: #495057; display: flex; align-items: center; gap: 8px; }
+.catalogoeformularios-destino-tipo { font-size: 10px; color: #6c757d; background: #f0f0f0; padding: 2px 8px; border-radius: 10px; }
+.catalogoeformularios-destino-corpo { padding: 8px 12px 12px 12px; }
+
+.catalogoeformularios-dcampo {
+    display: block;
+    padding: 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.catalogoeformularios-dacc-cab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 10px;
+    cursor: pointer;
+    user-select: none;
+}
+.catalogoeformularios-dacc-cab:hover { background: #f8f9fa; }
+.catalogoeformularios-dacc-cab .catalogoeformularios-dcampo-label { flex: 1 1 auto; }
+.catalogoeformularios-dacc-seta {
+    color: #6c757d;
+    font-size: 14px;
+    flex: 0 0 auto;
+    transition: transform 0.15s ease;
+}
+.catalogoeformularios-dacc.aberto .catalogoeformularios-dacc-cab { background: #f8f9fa; }
+.catalogoeformularios-dacc.aberto .catalogoeformularios-dacc-seta { transform: rotate(180deg); }
+.catalogoeformularios-dacc-preenchido { border-left: 3px solid #5b9bd5; }
+.catalogoeformularios-dacc-preenchido .catalogoeformularios-dacc-cab { background: #eef5fc; }
+.catalogoeformularios-dacc-preenchido .catalogoeformularios-dacc-cab:hover { background: #e3eefa; }
+.catalogoeformularios-dacc-preenchido .catalogoeformularios-dcampo-label { color: #2f6db5; }
+.catalogoeformularios-dacc-preenchido .catalogoeformularios-dcampo-label::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #5b9bd5;
+    margin-right: 7px;
+    vertical-align: middle;
+}
+.catalogoeformularios-dacc-corpo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    padding: 8px 10px 14px 10px;
+    background: #fcfcfc;
+}
+.catalogoeformularios-dacc-corpo .catalogoeformularios-dcampo-estrat {
+    flex: 0 0 150px;
+}
+.catalogoeformularios-dacc-corpo .catalogoeformularios-dcampo-valor {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.catalogoeformularios-modal .catalogoeformularios-dacc-corpo .catalogoeformularios-select,
+.catalogoeformularios-modal .catalogoeformularios-dacc-corpo .catalogoeformularios-selbusca-header {
+    height: 38px !important;
+    min-height: 38px !important;
+    box-sizing: border-box !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    vertical-align: middle !important;
+}
+.catalogoeformularios-modal .catalogoeformularios-dacc-corpo .catalogoeformularios-dcampo-valor .catalogoeformularios-campo,
+.catalogoeformularios-modal .catalogoeformularios-dacc-corpo .catalogoeformularios-dcampo-estrat .catalogoeformularios-campo {
+    margin: 0 !important;
+}
+.catalogoeformularios-modal .catalogoeformularios-dacc-corpo .catalogoeformularios-selbusca {
+    width: 100%;
+}
+.catalogoeformularios-dacc-corpo .dc-salvar {
+    flex: 0 0 auto;
+    align-self: center;
+}
+.catalogoeformularios-dcampo-label { flex: 0 0 200px; font-size: 12px; font-weight: 600; color: #495057; }
+.catalogoeformularios-dcampo-estrat { flex: 0 0 180px; }
+.catalogoeformularios-dcampo-valor { flex: 1; min-width: 180px; }
+.catalogoeformularios-dcampo.sem-suporte .catalogoeformularios-dcampo-valor { color: #999; font-size: 12px; font-style: italic; }
+
+/* ---------- Controle de acesso ---------- */
+.catalogoeformularios-acesso-bloco {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+}
+.catalogoeformularios-acesso-cab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.catalogoeformularios-acesso-titulo { font-size: 13px; font-weight: 600; color: #495057; display: flex; align-items: center; gap: 8px; }
+
+/* ---------- Condicoes ---------- */
+.catalogoeformularios-cond-linha {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+.catalogoeformularios-cond-linha > * { flex: 1; min-width: 120px; }
+.catalogoeformularios-cond-linha .logica { flex: 0 0 70px; }
+.catalogoeformularios-cond-linha .rem { flex: 0 0 auto; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 900px) {
+    .catalogoeformularios-app { flex-direction: column; }
+    .catalogoeformularios-arvore { flex: 1 1 auto; max-width: 100%; position: static; max-height: 320px; }
+    .catalogoeformularios-dcampo-label,
+    .catalogoeformularios-dcampo-estrat { flex: 1 1 100%; }
+}
+
+/* Esconde a barra de status do TinyMCE dentro do modal */
+.catalogoeformularios-modal-overlay .tox-statusbar { display: none !important; }
+
+/* ---------- Acoes (duplicar/excluir) na arvore de Hierarquia ---------- */
+.catalogoeformularios-no-acoes {
+    display: none;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+.catalogoeformularios-no-cab:hover .catalogoeformularios-no-acoes,
+.catalogoeformularios-no-form:hover .catalogoeformularios-no-acoes { display: inline-flex; }
+
+/* Garante espaco para o nome encolher e os botoes aparecerem a direita. */
+.catalogoeformularios-no-rotulo { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.catalogoeformularios-no-form-nome { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.catalogoeformularios-no-form { gap: 4px; }
+
+/* Botoes compactos dentro da arvore. */
+.catalogoeformularios-no-acoes .catalogoeformularios-btn-icone {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    font-size: 11px;
+}
+
+/* ---------- Blocos expansiveis no modal de formulario ---------- */
+.catalogoeformularios-exp {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+.catalogoeformularios-exp-cab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    background: #f8f9fa;
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    cursor: pointer;
+    user-select: none;
+}
+.catalogoeformularios-exp-cab:hover { background: #e8f4fc; }
+.catalogoeformularios-exp-cab > span { flex: 1 1 auto; }
+.catalogoeformularios-exp-seta { color: #6c757d; transition: transform .15s ease-in-out; }
+.catalogoeformularios-exp.aberto .catalogoeformularios-exp-seta { transform: rotate(180deg); }
+.catalogoeformularios-exp-corpo { padding: 12px; border-top: 1px solid #dee2e6; }
+.catalogoeformularios-exp-corpo .catalogoeformularios-ac-rotulo {
+    display: block; font-size: 12px; font-weight: 600; color: #495057; margin: 10px 0 4px;
+}
+.catalogoeformularios-exp-corpo .catalogoeformularios-ac-ajuda {
+    display: flex; align-items: flex-start; gap: 6px; font-size: 12px; color: #6c757d; margin: 0 0 10px;
+}
+.catalogoeformularios-ac-todos-rot {
+    display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+    color: #495057; margin-bottom: 8px; cursor: pointer;
+}
+
+/* ---------- Subcategorias aninhadas dentro do acordeao ---------- */
+.catalogoeformularios-subcat {
+    border-left: 2px solid #e9ecef;
+    padding-left: 8px;
+    margin-top: 6px;
+}
+.catalogoeformularios-subcat-cab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #495057;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 4px;
+}
+.catalogoeformularios-subcat-cab:hover { background: #e8f4fc; }
+.catalogoeformularios-subcat-seta { color: #adb5bd; }
+.catalogoeformularios-subcat-nome {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Chevron proprio da subcategoria: alterna o acordeon sem entrar na categoria. */
+.catalogoeformularios-subcat-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    color: #6c757d;
+    cursor: pointer;
+}
+.catalogoeformularios-subcat-chevron:hover { background: #fff; color: #333; }
+.catalogoeformularios-subcat-chevron i { font-size: 13px; line-height: 1; }
+
+/* Botao dedicado para entrar na subcategoria (a barra de titulo agora so alterna o acordeon). */
+.catalogoeformularios-subcat-entrar {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    margin-left: 2px;
+}
+.catalogoeformularios-subcat-entrar i { font-size: 12px; }
+
+.catalogoeformularios-subcat-fechado > .catalogoeformularios-subcat-cab { background: #fff; }
+
+/* Botao que expande/recolhe o ramo inteiro a partir desta subcategoria. */
+.catalogoeformularios-subcat-cab .catalogoeformularios-subcat-ramo {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+}
+.catalogoeformularios-subcat-cab .catalogoeformularios-subcat-ramo i { font-size: 12px; }
+.catalogoeformularios-subcat-contagem {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6c757d;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 1px 8px;
+}
+
+/* ---------- Bloco de Controle de Acesso (criacao de formulario) ---------- */
+.catalogoeformularios-ac-bloco {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #f8f9fa;
+}
+.catalogoeformularios-ac-titulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 6px;
+}
+.catalogoeformularios-ac-ajuda {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 12px;
+    color: #6c757d;
+    margin: 0 0 10px;
+}
+.catalogoeformularios-ac-rotulo {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin: 10px 0 4px;
+}
+.catalogoeformularios-ac-bloco .catalogoeformularios-mb { background: #fff; }
+.catalogoeformularios-ac-todos-rot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+/* ---------- Botao "perfis que visualizam" ---------- */
+.catalogoeformularios-btn-perfis {
+    flex: 0 0 auto;
+    margin-left: 4px;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+    background: #fff;
+    color: #6c757d;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1;
+    transition: all .15s ease-in-out;
+}
+.catalogoeformularios-btn-perfis:hover {
+    background: #e8f4fc;
+    border-color: #5b9bd5;
+    color: #2f3f64;
+}
+
+/* Variante para os botoes de icone ja existentes (cabecalho de grupo / linha de form):
+   herda o tamanho do .catalogoeformularios-btn-icone, so ajusta a cor no hover. */
+.catalogoeformularios-btn-perfis-grupo:hover i,
+.catalogoeformularios-btn-perfis-linha:hover i { color: #2f3f64; }
+
+/* Na arvore lateral o botao so aparece ao passar o mouse, para nao poluir. */
+.catalogoeformularios-no-cab .catalogoeformularios-btn-perfis,
+.catalogoeformularios-no-form .catalogoeformularios-btn-perfis {
+    opacity: 0;
+    transition: opacity .15s ease-in-out;
+}
+.catalogoeformularios-no-cab:hover .catalogoeformularios-btn-perfis,
+.catalogoeformularios-no-form:hover .catalogoeformularios-btn-perfis { opacity: 1; }
+
+/* A linha de form da arvore precisa acomodar o botao a direita. */
+.catalogoeformularios-no-form { gap: 4px; }
+.catalogoeformularios-no-form > span:nth-child(3) { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Popover de perfis ---------- */
+.catalogoeformularios-pop-perfis {
+    position: absolute;
+    z-index: 1200;
+    min-width: 240px;
+    max-width: 320px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .15);
+    font-size: 12px;
+    color: #333;
+    overflow: hidden;
+}
+.catalogoeformularios-pop-perfis-cab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+}
+.catalogoeformularios-pop-perfis-cab > span { display: inline-flex; align-items: center; gap: 6px; }
+.catalogoeformularios-pop-perfis-x {
+    border: none;
+    background: transparent;
+    color: #999;
+    cursor: pointer;
+    padding: 2px;
+    line-height: 1;
+    border-radius: 3px;
+}
+.catalogoeformularios-pop-perfis-x:hover { background: #f0f0f0; color: #333; }
+
+.catalogoeformularios-pop-perfis-carregando,
+.catalogoeformularios-pop-perfis-vazio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px;
+    color: #6c757d;
+    font-size: 12px;
+}
+.catalogoeformularios-pop-perfis-aberto {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px;
+    color: #055160;
+    background: rgba(13, 202, 240, .1);
+    font-weight: 600;
+}
+
+.catalogoeformularios-pop-perfis-lista {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+    max-height: 240px;
+    overflow-y: auto;
+}
+.catalogoeformularios-pop-perfis-lista li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.catalogoeformularios-pop-perfis-lista li:last-child { border-bottom: none; }
+.catalogoeformularios-pop-perfis-lista li i { color: #5b9bd5; }
+
+.catalogoeformularios-pop-perfis-ir {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+    color: #2f3f64;
+    font-weight: 600;
+    text-decoration: none;
+}
+.catalogoeformularios-pop-perfis-ir:hover { background: #e8f4fc; }
+/* -----------------------------------------------------------------
+   Menu de acoes do formulario (botao "..." na barra do acordeao)
+   ----------------------------------------------------------------- */
+.catalogoeformularios-menu-form {
+    position: absolute;
+    z-index: 1200;
+    min-width: 210px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .15);
+    padding: 5px 0;
+    font-size: 12px;
+    color: #333;
+    overflow: hidden;
+}
+.catalogoeformularios-menu-form-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 7px 14px;
+    border: none;
+    background: transparent;
+    color: #333;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+.catalogoeformularios-menu-form-item i { width: 16px; font-size: 15px; color: #6c757d; flex: 0 0 auto; }
+.catalogoeformularios-menu-form-item span { flex: 1 1 auto; }
+.catalogoeformularios-menu-form-item:hover { background: #f8f9fa; color: #333; }
+.catalogoeformularios-menu-form-item:hover i { color: #495057; }
+.catalogoeformularios-menu-form-item.perigo { color: #c0392b; }
+.catalogoeformularios-menu-form-item.perigo i { color: #c0392b; }
+.catalogoeformularios-menu-form-item.perigo:hover { background: rgba(220, 53, 69, .08); color: #c0392b; }
+.catalogoeformularios-menu-form-sep { height: 1px; margin: 5px 0; background: #f0f0f0; }
+
+/* ---------- Ilustracao (icone nativo do GLPI) das categorias ---------- */
+.catalogoeformularios-ilus {
+    vertical-align: middle;
+    flex-shrink: 0;
+    color: #495057;
+}
+.catalogoeformularios-no-rotulo .catalogoeformularios-ilus { margin-right: 4px; }
+.catalogoeformularios-grupo-icone .catalogoeformularios-ilus { color: #6c757d; }
+
+/* Botao de editar na barra da subcategoria (painel principal) */
+.catalogoeformularios-subcat-editar { flex: 0 0 auto; }
+
+/* ---------- Seletor de icone dentro do modal de categoria ---------- */
+.catalogoeformularios-ilus-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.catalogoeformularios-ilus-topo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.catalogoeformularios-ilus-preview {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #f8f9fa;
+    color: #495057;
+}
+.catalogoeformularios-ilus-atual {
+    flex: 1;
+    font-size: 11px;
+    color: #6c757d;
+    word-break: break-all;
+}
+.catalogoeformularios-ilus-grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 6px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #fff;
+}
+.catalogoeformularios-ilus-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 40px;
+    padding: 4px;
+    cursor: pointer;
+    color: #495057;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    transition: background .12s, border-color .12s;
+}
+.catalogoeformularios-ilus-item:hover {
+    background: #f8f9fa;
+    border-color: #ced4da;
+}
+.catalogoeformularios-ilus-item.escolhido {
+    background: #e8f4fc;
+    border-color: #5b9bd5;
+}
+.catalogoeformularios-ilus-contagem {
+    font-size: 11px;
+    color: #999;
+}
+.catalogoeformularios-ilus-vazio {
+    grid-column: 1 / -1;
+    padding: 12px;
+    font-size: 12px;
+    color: #6c757d;
+    text-align: center;
+}
+
+/* ---------- Popularidade (criterio de ordem do catalogo nativo) ---------- */
+.catalogoeformularios-pop {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #8a6d3b;
+    background: rgba(255, 193, 7, .12);
+    border: 1px solid rgba(255, 193, 7, .35);
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.catalogoeformularios-pop i { font-size: 11px; }
+
+.catalogoeformularios-fixado {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-left: 4px;
+    color: #5b9bd5;
+}
+.catalogoeformularios-fixado i { font-size: 12px; }
+/* =================================================================
+   Navegador de itens (anda entre os formularios do catalogo)
+   ================================================================= */
+.catalogoeformularios-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 8px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    max-width: 340px;
+    order: -1;
+}
+.catalogoeformularios-nav-seta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    background: #fff;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+}
+.catalogoeformularios-nav-seta:hover:not(:disabled) { background: #fff3cd; color: #333; border-color: #e0b830; }
+.catalogoeformularios-nav-seta:disabled { opacity: 0.4; cursor: not-allowed; }
+.catalogoeformularios-nav-info {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    white-space: nowrap;
+    min-width: 44px;
+    text-align: center;
+}
+.catalogoeformularios-nav-nome {
+    font-size: 11px;
+    font-weight: 600;
+    color: #495057;
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 8px;
+    border-left: 1px solid #dee2e6;
+}
+
+/* =================================================================
+   Painel rapido de controle do formulario (inline na lista)
+   ================================================================= */
+.catalogoeformularios-form-linha-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    color: #adb5bd;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+.catalogoeformularios-form-linha.painel-aberto {
+    background: #e8f4fc;
+    box-shadow: inset 2px 0 0 #e5a54b;
+}
+.catalogoeformularios-form-linha.painel-aberto .catalogoeformularios-form-linha-chevron { color: #c98a36; }
+.catalogoeformularios-form-linha.painel-aberto .catalogoeformularios-form-linha-acoes { opacity: 1; }
+
+.catalogoeformularios-pn {
+    margin: 2px 0 10px 20px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-left: 2px solid #e5a54b;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.catalogoeformularios-pn-carregando,
+.catalogoeformularios-pn-vazio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.catalogoeformularios-pn-cab {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+.catalogoeformularios-pn-tit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+}
+.catalogoeformularios-pn-cab-acoes {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+.catalogoeformularios-pn-chips {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+.catalogoeformularios-pn-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 9px;
+    font-size: 11px;
+    color: #495057;
+    background: rgba(13, 110, 253, 0.06);
+    border: 1px solid rgba(13, 110, 253, 0.18);
+    border-radius: 11px;
+    max-width: 260px;
+}
+.catalogoeformularios-pn-chip i { color: #6c757d; font-size: 12px; line-height: 1; }
+.catalogoeformularios-pn-chip b { font-weight: 600; color: #6c757d; }
+.catalogoeformularios-pn-chip > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalogoeformularios-pn-chip.vazio {
+    background: rgba(108, 117, 125, 0.08);
+    border-color: rgba(108, 117, 125, 0.22);
+    color: #999;
+}
+
+.catalogoeformularios-pn-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    cursor: pointer;
+    margin: 0;
+}
+.catalogoeformularios-pn-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.catalogoeformularios-pn-switch .trilho {
+    display: inline-block;
+    width: 34px;
+    height: 17px;
+    border-radius: 9px;
+    background: #e0e0e0;
+    position: relative;
+    transition: background 0.15s ease-in-out;
+    flex-shrink: 0;
+}
+.catalogoeformularios-pn-switch .trilho::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.15s ease-in-out;
+}
+.catalogoeformularios-pn-switch input:checked + .trilho { background: #f0c946; }
+.catalogoeformularios-pn-switch input:checked + .trilho::before { transform: translateX(17px); }
+.catalogoeformularios-pn-switch .rot { font-size: 11px; font-weight: 600; color: #6c757d; }
+
+/* Grade de cards do painel */
+.catalogoeformularios-pn-grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    background: #fff;
+}
+.catalogoeformularios-pn-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 8px 10px 10px 10px;
+    background: #fff;
+    min-width: 0;
+}
+.catalogoeformularios-pn-card-larga { grid-column: span 2; }
+.catalogoeformularios-pn-card-cab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.catalogoeformularios-pn-card-cab > i { color: #c98a36; font-size: 14px; }
+.catalogoeformularios-pn-card-nota {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 400;
+    color: #999;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 55%;
+}
+.catalogoeformularios-pn-card-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: auto;
+}
+.catalogoeformularios-pn-alerta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+    color: #664d03;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 4px;
+    padding: 8px 10px;
+}
+.catalogoeformularios-pn-ajuda {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 11px;
+    color: #055160;
+    background: rgba(13, 202, 240, 0.1);
+    border: 1px solid rgba(13, 202, 240, 0.3);
+    border-radius: 4px;
+    padding: 7px 10px;
+    margin: 8px 0;
+}
+.catalogoeformularios-pn-vazio-txt { font-size: 11px; color: #999; }
+.catalogoeformularios-pn-sub {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    margin: 8px 0 4px 0;
+}
+
+/* Campos do chamado gerado */
+.catalogoeformularios-pn-campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 4px 14px;
+}
+.catalogoeformularios-pn-campo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 6px;
+    border-radius: 3px;
+    border-bottom: 1px solid #f5f5f5;
+    min-width: 0;
+}
+.catalogoeformularios-pn-campo:hover { background: #f8f9fa; }
+.catalogoeformularios-pn-campo.editando {
+    display: block;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    grid-column: 1 / -1;
+    padding: 8px;
+}
+.catalogoeformularios-pn-campo.editando .catalogoeformularios-pn-campo-rot { display: block; margin-bottom: 6px; }
+.catalogoeformularios-pn-campo-rot {
+    font-size: 11px;
+    color: #6c757d;
+    flex: 0 0 42%;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalogoeformularios-pn-campo-val {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #495057;
+    background: rgba(13, 110, 253, 0.06);
+    border: 1px solid rgba(13, 110, 253, 0.18);
+    border-radius: 3px;
+    padding: 3px 8px;
+    cursor: pointer;
+    text-align: left;
+}
+.catalogoeformularios-pn-campo-val > span {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalogoeformularios-pn-campo-val > i { color: #adb5bd; font-size: 12px; flex-shrink: 0; }
+.catalogoeformularios-pn-campo-val:hover > i { color: #c98a36; }
+.catalogoeformularios-pn-campo-val.vazio {
+    background: #f8f9fa;
+    border-color: #e0e0e0;
+    color: #999;
+    font-weight: 400;
+}
+.catalogoeformularios-pn-campo-val:disabled { cursor: default; }
+.catalogoeformularios-pn-campo.definido .catalogoeformularios-pn-campo-rot { color: #495057; }
+.catalogoeformularios-pn-campo.sem-suporte { opacity: 0.75; }
+
+/* Editor em linha (campos, atores e acesso) */
+.catalogoeformularios-pn-editor { padding-top: 6px; }
+.catalogoeformularios-pn-editor-linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.catalogoeformularios-pn-editor-linha .catalogoeformularios-select { max-width: 210px; }
+.catalogoeformularios-pn-editor-valor { flex: 1 1 220px; min-width: 200px; }
+.catalogoeformularios-pn-editor-valor .catalogoeformularios-campo { margin: 0; }
+.catalogoeformularios-pn-editor-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+.catalogoeformularios-pn-duas-colunas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+.catalogoeformularios-pn-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    color: #495057;
+    margin: 6px 0;
+    cursor: pointer;
+}
+.catalogoeformularios-pn-check input {
+    width: 1.05em;
+    height: 1.05em;
+    accent-color: #f0c946;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+/* Atores e listas de tags */
+.catalogoeformularios-pn-ator {
+    border-bottom: 1px solid #f5f5f5;
+    padding-bottom: 6px;
+}
+.catalogoeformularios-pn-ator:last-of-type { border-bottom: 0; }
+.catalogoeformularios-pn-ator-cab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.catalogoeformularios-pn-ator-rot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    flex: 1;
+    min-width: 0;
+}
+.catalogoeformularios-pn-ator-rot i { color: #adb5bd; font-size: 13px; }
+.catalogoeformularios-pn-ator-val {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 4px 0 0 0;
+}
+.catalogoeformularios-pn-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    color: #495057;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 2px 9px;
+    max-width: 100%;
+}
+.catalogoeformularios-pn-tag i { color: #6c757d; font-size: 11px; }
+.catalogoeformularios-pn-tag > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 190px;
+}
+
+.catalogoeformularios-pn-linha-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+.catalogoeformularios-pn-marca {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    color: #6c757d;
+    background: rgba(108, 117, 125, 0.08);
+    border: 1px solid rgba(108, 117, 125, 0.2);
+    border-radius: 3px;
+    padding: 2px 8px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalogoeformularios-pn-marca.on {
+    color: #198754;
+    background: rgba(25, 135, 84, 0.08);
+    border-color: rgba(25, 135, 84, 0.3);
+}
+.catalogoeformularios-pn-marca.alerta {
+    color: #664d03;
+    background: rgba(255, 193, 7, 0.12);
+    border-color: rgba(255, 193, 7, 0.3);
+}
+.catalogoeformularios-pn-metricas {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.catalogoeformularios-pn-metricas > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #6c757d;
+}
+.catalogoeformularios-pn-metricas b { font-size: 12.5px; color: #333; font-weight: 600; }
+.catalogoeformularios-pn-metricas i { color: #adb5bd; font-size: 13px; }
+
+/* =================================================================
+   Matriz do catalogo (tabela de todos os formularios)
+   ================================================================= */
+.catalogoeformularios-mx-lote {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+.catalogoeformularios-mx-lote .catalogoeformularios-pn-sub { margin: 0; }
+.catalogoeformularios-mx-lote .catalogoeformularios-select { max-width: 230px; }
+.catalogoeformularios-mx-lote-valor { flex: 1 1 240px; min-width: 220px; }
+.catalogoeformularios-mx-lote-valor .catalogoeformularios-campo { margin: 0; }
+
+.catalogoeformularios-mx-wrap {
+    max-height: 60vh;
+    overflow: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+table.catalogoeformularios-mx {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: #fff;
+}
+table.catalogoeformularios-mx thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f8f9fa;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6c757d;
+    padding: 6px 8px;
+    border-bottom: 1px solid #dee2e6;
+    white-space: nowrap;
+}
+table.catalogoeformularios-mx tbody td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    max-width: 190px;
+}
+table.catalogoeformularios-mx tbody tr:nth-child(even) { background: #fcfcfd; }
+table.catalogoeformularios-mx tbody tr:hover { background: #f8f9fa; }
+table.catalogoeformularios-mx tbody tr.sem-destino { background: rgba(255, 193, 7, 0.06); }
+table.catalogoeformularios-mx td.mini,
+table.catalogoeformularios-mx th.mini { width: 34px; text-align: center; }
+table.catalogoeformularios-mx td.nome {
+    display: table-cell;
+    font-weight: 600;
+    color: #333;
+}
+table.catalogoeformularios-mx td.nome i { color: #c98a36; margin-right: 6px; }
+table.catalogoeformularios-mx td.nome .ti-alert-triangle { color: #997404; margin: 0 0 0 4px; }
+table.catalogoeformularios-mx input[type="checkbox"] {
+    width: 1.05em;
+    height: 1.05em;
+    accent-color: #f0c946;
+    margin: 0;
+}
+.catalogoeformularios-mx-val {
+    display: inline-block;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #495057;
+    vertical-align: middle;
+}
+.catalogoeformularios-mx-vazio { color: #bbb; font-style: italic; }
+
+/* Telas estreitas: os cards do painel viram uma coluna */
+@media (max-width: 1200px) {
+    .catalogoeformularios-pn-card-larga { grid-column: span 1; }
+    .catalogoeformularios-pn-campos { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+    .catalogoeformularios-nav { max-width: 100%; }
+    .catalogoeformularios-nav-nome { display: none; }
+    .catalogoeformularios-pn { margin-left: 6px; }
+}
+
+/* Barra de titulo com o navegador: titulo a esquerda, acoes a direita */
+.catalogoeformularios-main .catalogoeformularios-cat-topo { justify-content: flex-start; }
+.catalogoeformularios-main .catalogoeformularios-cat-expandir { margin-right: 0; }
+.catalogoeformularios-main .catalogoeformularios-cat-acoes { margin-left: auto; }
+
+/* Acoes da linha do formulario sempre perceptiveis (sem depender do hover) */
+.catalogoeformularios-form-linha-acoes { opacity: 0.5; }
+.catalogoeformularios-form-linha:hover .catalogoeformularios-form-linha-acoes,
+.catalogoeformularios-form-linha.painel-aberto .catalogoeformularios-form-linha-acoes { opacity: 1; }
+
+/* =================================================================
+   Campos dentro do painel rapido
+   O estilo de formulario do plugin era escopado em .catalogoeformularios-modal,
+   entao o painel (que vive na propria pagina) precisa das mesmas regras,
+   em versao compacta.
+   ================================================================= */
+.catalogoeformularios-pn .catalogoeformularios-campo { margin: 0; }
+
+.catalogoeformularios-pn .catalogoeformularios-input,
+.catalogoeformularios-pn .catalogoeformularios-select,
+.catalogoeformularios-pn textarea.catalogoeformularios-input {
+    width: 100%;
+    padding: 5px 9px;
+    font-size: 12px;
+    line-height: 1.4;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    color: #333;
+    background: #fff;
+    height: auto;
+    min-height: 0;
+}
+.catalogoeformularios-pn .catalogoeformularios-input:focus,
+.catalogoeformularios-pn .catalogoeformularios-select:focus {
+    outline: none;
+    border-color: #e0b830;
+    box-shadow: 0 0 0 0.15rem rgba(240, 201, 70, 0.25);
+}
+.catalogoeformularios-pn .catalogoeformularios-select {
+    /* seta propria: nunca sobrepoe o texto da opcao selecionada */
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 26px;
+}
+
+/* Select com busca em tempo real */
+.catalogoeformularios-pn .catalogoeformularios-selbusca { position: relative; }
+.catalogoeformularios-pn .catalogoeformularios-selbusca-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 5px 9px;
+    font-size: 12px;
+    color: #333;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.catalogoeformularios-pn .catalogoeformularios-selbusca-header:hover { border-color: #e0b830; }
+.catalogoeformularios-pn .catalogoeformularios-selbusca-header i {
+    color: #6c757d;
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.catalogoeformularios-pn .catalogoeformularios-selbusca-texto {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalogoeformularios-pn .catalogoeformularios-selbusca-dropdown {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    right: 0;
+    min-width: 240px;
+    z-index: 1090;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    padding: 7px;
+}
+.catalogoeformularios-pn .catalogoeformularios-selbusca-search { margin-bottom: 7px; }
+.catalogoeformularios-pn .catalogoeformularios-selbusca-opcoes {
+    max-height: 210px;
+    overflow-y: auto;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+}
+.catalogoeformularios-pn .catalogoeformularios-selbusca-opcao {
+    padding: 5px 9px;
+    font-size: 12px;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalogoeformularios-pn .catalogoeformularios-selbusca-opcao:last-child { border-bottom: 0; }
+.catalogoeformularios-pn .catalogoeformularios-selbusca-opcao:hover { background: #f8f9fa; }
+.catalogoeformularios-pn .catalogoeformularios-selbusca-opcao.selecionada {
+    background: #e8f4fc;
+    font-weight: 600;
+}
+
+/* Multiselect com busca (atores e acesso) */
+.catalogoeformularios-pn .catalogoeformularios-mb { background: #fff; }
+.catalogoeformularios-pn .catalogoeformularios-mb-busca { max-width: 100%; }
+.catalogoeformularios-pn .catalogoeformularios-mb-lista {
+    max-height: 170px;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+}
+.catalogoeformularios-pn .catalogoeformularios-mb-item {
+    padding: 4px 9px !important;
+    font-size: 12px !important;
+    border-bottom: 1px solid #f5f5f5 !important;
+}
+.catalogoeformularios-pn .catalogoeformularios-mb-item:hover { background: #f8f9fa; }
+.catalogoeformularios-pn .catalogoeformularios-mb-item input[type="checkbox"] {
+    width: 1.05em;
+    height: 1.05em;
+    accent-color: #f0c946;
+    flex-shrink: 0;
+    margin: 0;
+}
+.catalogoeformularios-pn .catalogoeformularios-mb-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalogoeformularios-pn .catalogoeformularios-mb-item input:checked + span { font-weight: 600; color: #333; }
+
+/* Editor aberto: rotulo em cima, controles numa linha unica e alinhada */
+.catalogoeformularios-pn-campo.editando .catalogoeformularios-pn-campo-val {
+    max-width: 100%;
+    margin-bottom: 8px;
+}
+.catalogoeformularios-pn-editor-linha .catalogoeformularios-select {
+    flex: 0 0 190px;
+    max-width: 190px;
+}
+.catalogoeformularios-pn-editor-valor { position: relative; }
+
+/* O painel nao pode cortar o dropdown de busca que abre perto da borda */
+.catalogoeformularios-pn { overflow: visible; }
+.catalogoeformularios-pn-grade,
+.catalogoeformularios-pn-card,
+.catalogoeformularios-pn-campos,
+.catalogoeformularios-pn-campo { overflow: visible; }
+
+/* Aviso de busca sem resultado (select com busca) */
+.catalogoeformularios-selbusca-nada {
+    display: none;
+    padding: 7px 9px;
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: #6c757d;
+    background: rgba(108, 117, 125, 0.08);
+    border: 1px solid rgba(108, 117, 125, 0.22);
+    border-radius: 4px;
+}
+
+/* ===================================================================
+   Editor completo do formulario dentro do acordeao (3.0)
+   =================================================================== */
+.catalogoeformularios-editor-base { display: none !important; }
+
+/* Abas do acordeao */
+.catalogoeformularios-pn-abas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 10px 0 10px;
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa;
+}
+.catalogoeformularios-pn-aba {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    margin-bottom: -1px;
+}
+.catalogoeformularios-pn-aba:hover { background: #fff3cd; color: #495057; }
+.catalogoeformularios-pn-aba.ativa {
+    background: #fff;
+    color: #333;
+    border-color: #dee2e6;
+    box-shadow: inset 0 2px 0 #e5a54b;
+}
+.catalogoeformularios-pn-aba-n {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(108, 117, 125, 0.12);
+    color: #495057;
+}
+.catalogoeformularios-pn-aba-corpo { padding: 10px; overflow: visible; }
+.catalogoeformularios-pn-aba-corpo > .catalogoeformularios-pn-grade { padding: 0; }
+.catalogoeformularios-pn-aba-corpo > .catalogoeformularios-pn-card { margin-top: 10px; }
+
+/* Blocos comuns do editor */
+.catalogoeformularios-ed-grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px 18px;
+}
+.catalogoeformularios-ed-col { min-width: 0; }
+.catalogoeformularios-ed-leitura {
+    font-size: 12px;
+    color: #495057;
+    padding: 6px 8px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+.catalogoeformularios-ed-switches {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 20px;
+    margin: 4px 0 10px 0;
+}
+.catalogoeformularios-ed-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+}
+.catalogoeformularios-ed-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.catalogoeformularios-ed-switch .trilho {
+    display: inline-block;
+    width: 34px;
+    height: 17px;
+    border-radius: 9px;
+    background: #e0e0e0;
+    position: relative;
+    transition: background 0.15s ease-in-out;
+    flex-shrink: 0;
+}
+.catalogoeformularios-ed-switch .trilho::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.15s ease-in-out;
+}
+.catalogoeformularios-ed-switch input:checked + .trilho { background: #f0c946; }
+.catalogoeformularios-ed-switch input:checked + .trilho::before { transform: translateX(17px); }
+.catalogoeformularios-ed-switch input:focus-visible + .trilho { box-shadow: 0 0 0 3px rgba(240, 201, 70, 0.25); }
+.catalogoeformularios-ed-rodape {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 8px;
+    margin-top: 6px;
+    border-top: 1px solid #f0f0f0;
+}
+.catalogoeformularios-btn-mini { padding: 2px 8px !important; font-size: 11px !important; }
+.catalogoeformularios-ed-barra {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.catalogoeformularios-ed-dica { flex: 1; font-size: 11px; color: #6c757d; }
+.catalogoeformularios-ed-dica i { color: #0dcaf0; }
+
+/* Secoes */
+.catalogoeformularios-ed-secao {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background: #fff;
+    overflow: visible;
+}
+.catalogoeformularios-ed-secao-cab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    font-size: 12px;
+}
+.catalogoeformularios-ed-secao-cab:hover,
+.catalogoeformularios-ed-secao-cab.editando { background: #fff8e6; }
+.catalogoeformularios-ed-secao-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(229, 165, 75, 0.18);
+    color: #8a5a17;
+    font-size: 11px;
+    font-weight: 600;
+}
+.catalogoeformularios-ed-secao-nome { font-weight: 600; color: #495057; }
+.catalogoeformularios-ed-secao-qtd { font-size: 11px; color: #999; }
+.catalogoeformularios-ed-acoes { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }
+.catalogoeformularios-ed-alca,
+.catalogoeformularios-ed-alca-secao,
+.catalogoeformularios-ed-alca-opcao { cursor: grab; color: #adb5bd; }
+.catalogoeformularios-ed-enviar .catalogoeformularios-ed-secao-cab > i { color: #c98a36; }
+
+/* Perguntas e blocos de texto */
+.catalogoeformularios-ed-blocos { padding: 4px 6px 6px 6px; min-height: 26px; }
+.catalogoeformularios-ed-vazio-secao { font-size: 12px; color: #999; padding: 6px 4px; }
+.catalogoeformularios-ed-bloco {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+.catalogoeformularios-ed-bloco:hover { background: #f8f9fa; }
+.catalogoeformularios-ed-bloco.editando { background: #e8f4fc; }
+.catalogoeformularios-ed-bloco-texto { color: #6c757d; }
+.catalogoeformularios-ed-bloco-ic { color: #6c757d; font-size: 15px; }
+.catalogoeformularios-ed-bloco-nome {
+    font-weight: 600;
+    color: #333;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalogoeformularios-ed-bloco-tipo {
+    margin-left: auto;
+    font-size: 11px;
+    color: #6c757d;
+    background: rgba(108, 117, 125, 0.1);
+    border-radius: 10px;
+    padding: 1px 8px;
+    white-space: nowrap;
+}
+.catalogoeformularios-ed-bloco .catalogoeformularios-ed-acoes { margin-left: 4px; }
+.catalogoeformularios-ed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #41464b;
+    background: rgba(108, 117, 125, 0.1);
+    border: 1px solid rgba(108, 117, 125, 0.25);
+    border-radius: 10px;
+    padding: 0 7px;
+    white-space: nowrap;
+}
+.catalogoeformularios-ed-badge.cond {
+    color: #055160;
+    background: rgba(13, 202, 240, 0.1);
+    border-color: rgba(13, 202, 240, 0.3);
+}
+
+/* Editor aberto embaixo da linha */
+.catalogoeformularios-ed-editor { display: none; }
+.catalogoeformularios-ed-editor.aberto {
+    display: block;
+    margin: 4px 6px 8px 6px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-left: 2px solid #e5a54b;
+    border-radius: 4px;
+}
+.catalogoeformularios-ed-secao > .catalogoeformularios-ed-editor.aberto { margin: 8px; }
+
+/* Opcoes de escolha */
+.catalogoeformularios-ed-opcoes { display: flex; flex-direction: column; gap: 4px; max-width: 520px; }
+.catalogoeformularios-ed-opcao { display: flex; align-items: center; gap: 8px; }
+.catalogoeformularios-ed-opcao .catalogoeformularios-input { flex: 1; }
+.catalogoeformularios-ed-padrao-opcoes { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+
+/* Construtor de condicoes */
+.catalogoeformularios-cb { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.catalogoeformularios-cb-estr { max-width: 240px; }
+.catalogoeformularios-cb-linhas { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.catalogoeformularios-cb-linha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+}
+.catalogoeformularios-cb-linha .catalogoeformularios-select,
+.catalogoeformularios-cb-linha .catalogoeformularios-input { width: auto; max-width: 240px; }
+.catalogoeformularios-cb-origem { min-width: 200px; }
+.catalogoeformularios-cb-logica { max-width: 70px !important; }
+.catalogoeformularios-cb-se { font-size: 11px; font-weight: 600; color: #6c757d; min-width: 34px; }
+.catalogoeformularios-cb-semvalor { font-size: 11px; color: #999; font-style: italic; }
+.catalogoeformularios-cb-aviso {
+    font-size: 11px;
+    color: #664d03;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 4px;
+    padding: 5px 8px;
+}
+
+/* Destinos e condicao de criacao */
+.catalogoeformularios-ed-destino { border-bottom: 1px solid #f0f0f0; padding: 6px 0; }
+.catalogoeformularios-ed-destino-cab {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #495057;
+}
+.catalogoeformularios-ed-destino-cab .catalogoeformularios-ed-bloco-tipo { margin-left: 0; }
+.catalogoeformularios-ed-destino-cab .catalogoeformularios-btn { margin-left: auto; }
+
+/* Icone do formulario na lista */
+span.catalogoeformularios-form-linha-ic { display: inline-flex; align-items: center; }
+
+@media (max-width: 760px) {
+    .catalogoeformularios-pn-card-larga { grid-column: auto; }
+    .catalogoeformularios-ed-bloco-tipo { display: none; }
+}
+
+/* Campos dentro das abas do acordeao (mesmo visual dos modais, mais compacto) */
+.catalogoeformularios-pn .catalogoeformularios-pn-aba-corpo .catalogoeformularios-campo { margin: 0 0 10px 0; }
+.catalogoeformularios-pn .catalogoeformularios-pn-aba-corpo .catalogoeformularios-campo > label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+}
+.catalogoeformularios-pn .catalogoeformularios-campo .obrig { color: #dc3545; }
+.catalogoeformularios-pn .catalogoeformularios-cb-linha .catalogoeformularios-select,
+.catalogoeformularios-pn .catalogoeformularios-cb-linha .catalogoeformularios-input { width: auto; }
+.catalogoeformularios-pn .catalogoeformularios-cb-estr { width: auto; }

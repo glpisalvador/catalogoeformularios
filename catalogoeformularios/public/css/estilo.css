@@ -1,0 +1,259 @@
+/* ===== Catalogo de Servicos - estilos da tela de configuracao ===== */
+/* Todas as classes sao prefixadas com catalogoeformularios- para nao vazar estilo. */
+
+.catalogoeformularios-config {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ---- Cards ---- */
+.catalogoeformularios-config .catalogoeformularios-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    margin-bottom: 18px;
+    overflow: visible; /* importante para os dropdowns do multiselect nao serem cortados */
+}
+
+.catalogoeformularios-config .catalogoeformularios-card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-card-header i {
+    color: #6c757d;
+}
+
+.catalogoeformularios-config .catalogoeformularios-card-body {
+    padding: 15px;
+    overflow: visible;
+}
+
+/* ---- Textos auxiliares e labels ---- */
+.catalogoeformularios-config .catalogoeformularios-help {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin: 12px 0 6px 0;
+}
+
+/* ---- Botao salvar ---- */
+.catalogoeformularios-config .catalogoeformularios-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 8px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-btn-salvar {
+    background: #e5a54b;
+    border: 1px solid #e5a54b;
+    color: #fff;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 3px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-btn-salvar:hover {
+    filter: brightness(0.96);
+}
+
+/* ---- Botoes de acao (Categorias ITIL / Copiar) ---- */
+.catalogoeformularios-config .catalogoeformularios-botao-linha {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.catalogoeformularios-config .catalogoeformularios-btn-acao {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 3px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-btn-acao:hover {
+    background: #f0f0f0;
+}
+
+.catalogoeformularios-config .catalogoeformularios-btn-acao:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.catalogoeformularios-config .catalogoeformularios-resultado {
+    font-size: 12px;
+    color: #495057;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-resultado.sucesso {
+    color: #198754;
+}
+
+.catalogoeformularios-config .catalogoeformularios-resultado.erro {
+    color: #dc3545;
+}
+
+/* ---- Multiselect customizado ---- */
+.catalogoeformularios-config .catalogoeformularios-multiselect {
+    position: relative;
+    max-width: 500px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: #495057;
+    background: #fff;
+    cursor: pointer;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-header i {
+    color: #6c757d;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    padding: 8px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-search {
+    width: 100%;
+    max-width: 350px;
+    margin-bottom: 8px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-selectall {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0f0f0;
+    padding: 5px 10px;
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    margin: 0;
+    cursor: pointer;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-options {
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0 0 4px 4px;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+    color: #333;
+    margin: 0;
+    cursor: pointer;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-option:hover {
+    background: #f8f9fa;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-option.selected {
+    background: #e8f4fc;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-count {
+    font-size: 11px;
+    color: #999;
+    margin-top: 6px;
+}
+
+/* ---- Checkbox customizado ---- */
+.catalogoeformularios-config .catalogoeformularios-ms-option input[type="checkbox"],
+.catalogoeformularios-config .catalogoeformularios-ms-selectall input[type="checkbox"] {
+    width: 1.15em;
+    height: 1.15em;
+    -webkit-appearance: none;
+    appearance: none;
+    border: 2px solid #d0d0d0;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease-in-out;
+    flex-shrink: 0;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-option input[type="checkbox"]:hover,
+.catalogoeformularios-config .catalogoeformularios-ms-selectall input[type="checkbox"]:hover {
+    border-color: #e0b830;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-option input[type="checkbox"]:checked,
+.catalogoeformularios-config .catalogoeformularios-ms-selectall input[type="checkbox"]:checked {
+    background: #f0c946;
+    border-color: #e0b830;
+}
+
+.catalogoeformularios-config .catalogoeformularios-ms-option input[type="checkbox"]:checked::after,
+.catalogoeformularios-config .catalogoeformularios-ms-selectall input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 4px;
+    height: 8px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
