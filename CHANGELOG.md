@@ -2,6 +2,12 @@
 
 O arquivo para download de cada versão está em [Releases](https://github.com/glpisalvador/catalogoeformularios/releases).
 
+## 3.0.2 — 2026-10-05
+
+- Aba Geral reorganizada: Nome, Entidade, **Categoria ITIL do chamado gerado** (nova, escolha rápida), Categoria do catálogo, descrição e cabeçalho fechados, **Atores do chamado** (ver e escolher rápido) e o ícone por último, na largura toda.
+- **Exibição, Ativo, Subentidades e Fixado no topo** passaram para a barra de título do acordeão e salvam ao alterar.
+- O salvamento da aba Geral passou a gravar só os campos enviados.
+
 ## 3.0.1 — 2026-10-05
 
 - No acordeão, **"+ Pergunta"** passou a ser o botão em destaque (laranja). **"+ Seção"** ficou pequeno e cinza.

@@ -286,6 +286,23 @@ class PluginCatalogoeformulariosEstrutura extends CommonGLPI
             'tem_layout'  => array_key_exists('render_layout', $f),
             'entidade'    => (int) ($f['entities_id'] ?? 0),
             'entidade_nome' => Dropdown::getDropdownName('glpi_entities', (int) ($f['entities_id'] ?? 0)),
+            'categoria_itil' => self::categoriaItil((int) $f['id']),
+        ];
+    }
+
+    /** Categoria ITIL configurada no destino de chamado do formulario. */
+    private static function categoriaItil(int $formId): array
+    {
+        $destino = PluginCatalogoeformulariosDestino::getDestinoTicketPadrao($formId);
+        if ($destino <= 0) {
+            return ['tem_destino' => false, 'estrategia' => 'modelo', 'valor' => 0];
+        }
+        $c = PluginCatalogoeformulariosDestino::estadoCampos($destino)['categoria'] ?? [];
+        $valor = $c['valor'] ?? 0;
+        return [
+            'tem_destino' => true,
+            'estrategia'  => (string) ($c['estrategia'] ?? 'modelo'),
+            'valor'       => is_array($valor) ? 0 : (int) $valor,
         ];
     }
 
@@ -942,18 +959,27 @@ class PluginCatalogoeformulariosEstrutura extends CommonGLPI
         if (!$f) {
             return ['ok' => false, 'msg' => 'Formulario nao encontrado.'];
         }
-        $nome = trim((string) ($d['nome'] ?? $f['name']));
-        if ($nome === '') {
-            return ['ok' => false, 'msg' => 'Informe o nome do formulario.'];
+        // So grava o que veio: a barra do acordeao manda um campo por vez (ativo, subentidades, fixado, exibicao)
+        $dados = ['id' => $formId];
+        if (array_key_exists('nome', $d)) {
+            $nome = trim((string) $d['nome']);
+            if ($nome === '') {
+                return ['ok' => false, 'msg' => 'Informe o nome do formulario.'];
+            }
+            $dados['name'] = $nome;
         }
-        $dados = [
-            'id'                  => $formId,
-            'name'                => $nome,
-            'description'         => (string) ($d['descricao'] ?? $f['description']),
-            'header'              => (string) ($d['header'] ?? $f['header']),
-            'forms_categories_id' => max(0, (int) ($d['categoria'] ?? $f['forms_categories_id'])),
-            'is_recursive'        => !empty($d['recursivo']) ? 1 : 0,
-        ];
+        if (array_key_exists('descricao', $d)) {
+            $dados['description'] = (string) $d['descricao'];
+        }
+        if (array_key_exists('header', $d)) {
+            $dados['header'] = (string) $d['header'];
+        }
+        if (array_key_exists('categoria', $d)) {
+            $dados['forms_categories_id'] = max(0, (int) $d['categoria']);
+        }
+        if (array_key_exists('recursivo', $d)) {
+            $dados['is_recursive'] = !empty($d['recursivo']) ? 1 : 0;
+        }
         if (array_key_exists('illustration', $f) && array_key_exists('ilustracao', $d)) {
             // Ids nativos (letras, numeros, - e _) ou enviados pelo usuario ("custom:arquivo.png")
             $dados['illustration'] = preg_replace('/[^A-Za-z0-9_.:\-]/', '', (string) $d['ilustracao']);
@@ -973,8 +999,16 @@ class PluginCatalogoeformulariosEstrutura extends CommonGLPI
         if (array_key_exists('render_layout', $f) && in_array((string) ($d['layout'] ?? ''), ['step_by_step', 'single_page'], true)) {
             $dados['render_layout'] = (string) $d['layout'];
         }
-        if (!(new Form())->update($dados)) {
+        if (count($dados) > 1 && !(new Form())->update($dados)) {
             return ['ok' => false, 'msg' => 'Falha ao salvar o formulario.'];
+        }
+        // Categoria ITIL do chamado gerado (campo do destino de chamado; 0 = padrao do GLPI)
+        if (array_key_exists('categoria_itil', $d)) {
+            $cat = (int) $d['categoria_itil'];
+            $r = PluginCatalogoeformulariosPainel::salvarCampo($formId, 'categoria', $cat > 0 ? 'especifico' : 'limpar', $cat);
+            if (empty($r['ok'])) {
+                return ['ok' => false, 'msg' => 'Dados salvos, mas a categoria ITIL nao: ' . ($r['msg'] ?? '')];
+            }
         }
         if (array_key_exists('ativo', $d) && (bool) $d['ativo'] !== ((int) $f['is_active'] === 1)) {
             $r = PluginCatalogoeformulariosCatalogo::alternarAtivoFormulario($formId, !empty($d['ativo']));

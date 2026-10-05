@@ -2824,3 +2824,20 @@ span.catalogoeformularios-form-linha-ic { display: inline-flex; align-items: cen
 .catalogoeformularios-ed-sanfona-vazio { margin-left: auto; }
 .catalogoeformularios-ed-sanfona-vazio { font-size: 11px; font-weight: 400; color: #999; }
 .catalogoeformularios-ed-sanfona-corpo { padding: 8px; }
+
+/* Barra de titulo do acordeao com as opcoes do formulario (3.0.2) */
+.catalogoeformularios-pn-cab-acoes { flex-wrap: wrap; gap: 6px 14px; justify-content: flex-end; }
+.catalogoeformularios-pn .catalogoeformularios-pn-layout { width: auto; max-width: 140px; padding: 3px 8px; font-size: 11px; }
+
+/* Aba Geral: atores do chamado */
+.catalogoeformularios-ge-atores { display: flex; flex-direction: column; border: 1px solid #e0e0e0; border-radius: 4px; }
+.catalogoeformularios-ge-ator { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid #f0f0f0; }
+.catalogoeformularios-ge-ator:last-child { border-bottom: 0; }
+.catalogoeformularios-ge-ator-rot { min-width: 130px; font-size: 12px; font-weight: 600; color: #495057; display: inline-flex; align-items: center; gap: 6px; }
+.catalogoeformularios-ge-ator-rot i { color: #c98a36; }
+.catalogoeformularios-ge-ator-val { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.catalogoeformularios-ge-ator-editor { flex-basis: 100%; padding: 8px 0 2px 0; }
+
+/* Aba Geral: icone por ultimo, na largura toda */
+.catalogoeformularios-ge-icone { margin-top: 4px; }
+.catalogoeformularios-ge-icone .catalogoeformularios-ilus-grade { max-height: 170px; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); }

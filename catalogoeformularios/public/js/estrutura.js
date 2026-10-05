@@ -237,13 +237,13 @@
         var f = est.form || {};
         var u = U();
         var podeEditar = !!CFG().podeEditar;
-        var idDesc = uid('ge_desc'), idHead = uid('ge_head');
+        var idDesc = uid('ge_desc'), idHead = uid('ge_head'), idItil = uid('ge_itil');
         var optCat = [{ v: 0, t: '(Raiz do catalogo)' }].concat((CFG().categorias || []).map(function (c) { return { v: c.id, t: c.nome }; }));
+        var itil = f.categoria_itil || { tem_destino: false, estrategia: 'modelo', valor: 0 };
 
+        // 1. Nome, entidade, categoria ITIL e categoria do catalogo
         var h = '<div class="' + P + 'ed-grade">';
-        h += '<div class="' + P + 'ed-col">';
-        h += '<div class="' + P + 'campo"><label>Nome <span class="obrig">*</span></label><input type="text" class="' + P + 'input" data-ge="nome" value="' + esc(f.nome) + '"></div>';
-        h += u.campoSelectBusca(uid('ge_cat'), 'Categoria do catalogo', optCat, f.categoria || 0).replace('<div class="' + P + 'selbusca">', '<div class="' + P + 'selbusca" data-ge-cat>');
+        h += '<div class="' + P + 'campo"><label>Nome <span class="obrig">*</span></label><input type="text" class="' + P + 'input" data-ge="nome" value="' + esc(f.nome) + '"' + (podeEditar ? '' : ' disabled') + '></div>';
         // Entidades ativas do usuario; a atual do formulario entra mesmo se estiver fora delas
         var optEnt = (CFG().entidades || []).map(function (e) { return { v: e.id, t: e.nome }; });
         if (!optEnt.some(function (o) { return o.v === f.entidade; })) { optEnt.unshift({ v: f.entidade, t: f.entidade_nome || ('#' + f.entidade) }); }
@@ -252,22 +252,23 @@
         } else {
             h += '<div class="' + P + 'campo"><label>Entidade</label><div class="' + P + 'ed-leitura"><i class="ti ti-building"></i> ' + esc(f.entidade_nome || '') + '</div></div>';
         }
-        h += '<div class="' + P + 'ed-switches">';
-        h += switchHtml('ativo', 'Ativo no catalogo', f.ativo);
-        h += switchHtml('recursivo', 'Visivel nas subentidades', f.recursivo);
-        if (f.tem_fixado) { h += switchHtml('fixado', 'Fixado no topo do catalogo', f.fixado); }
+        h += '<div class="' + P + 'campo" data-ge-itil-wrap><label>Categoria ITIL do chamado gerado</label><div data-ge-itil><span class="' + P + 'pn-vazio-txt">carregando...</span></div>'
+            + (itil.estrategia === 'resposta' ? '<p class="' + P + 'pn-ajuda"><i class="ti ti-info-circle"></i> Hoje a categoria vem da resposta de uma pergunta. Escolher uma aqui fixa a categoria.</p>' : '')
+            + (!itil.tem_destino ? '<p class="' + P + 'pn-ajuda"><i class="ti ti-alert-triangle"></i> Este formulario ainda nao tem destino de chamado (aba Chamado gerado).</p>' : '')
+            + '</div>';
+        h += u.campoSelectBusca(uid('ge_cat'), 'Categoria do catalogo', optCat, f.categoria || 0).replace('<div class="' + P + 'selbusca">', '<div class="' + P + 'selbusca" data-ge-cat>');
         h += '</div>';
-        if (f.tem_layout) {
-            h += '<div class="' + P + 'campo"><label>Exibicao</label><select class="' + P + 'select" data-ge="layout">'
-                + '<option value="step_by_step"' + (f.layout !== 'single_page' ? ' selected' : '') + '>Passo a passo (uma secao por vez)</option>'
-                + '<option value="single_page"' + (f.layout === 'single_page' ? ' selected' : '') + '>Pagina unica (todas as secoes)</option></select></div>';
-        }
-        h += '</div>';
-        h += '<div class="' + P + 'ed-col">';
-        if (f.tem_ilustracao) { h += u.campoIlustracao('ge_ilustracao_' + formId, 'Icone do formulario', f.ilustracao || ''); }
-        h += '</div></div>';
+
+        // 2. Descricao e cabecalho (fechados)
         h += richSanfona(idDesc, 'Descricao (aparece no catalogo)', f.descricao || '');
         h += richSanfona(idHead, 'Cabecalho (aparece no topo do formulario)', f.header || '');
+
+        // 3. Atores do chamado (ver e escolher rapido; cada ator salva na hora)
+        h += '<div class="' + P + 'campo"><label><i class="ti ti-users"></i> Atores do chamado gerado</label><div class="' + P + 'ge-atores" data-ge-atores><span class="' + P + 'pn-vazio-txt">carregando...</span></div></div>';
+
+        // 4. Icone por ultimo, na largura toda
+        if (f.tem_ilustracao) { h += '<div class="' + P + 'ge-icone">' + u.campoIlustracao('ge_ilustracao_' + formId, 'Icone do formulario', f.ilustracao || '') + '</div>'; }
+
         if (podeEditar) {
             h += '<div class="' + P + 'ed-rodape"><button type="button" class="' + P + 'btn ' + P + 'btn-primario" data-ge-salvar><i class="ti ti-device-floppy"></i> Salvar</button></div>';
         }
@@ -275,6 +276,18 @@
         box.innerHTML = h;
         box.querySelectorAll('.' + P + 'selbusca').forEach(u.ativarSelectBusca);
         if (f.tem_ilustracao) { u.ativarSeletorIlustracao(box, 'ge_ilustracao_' + formId); }
+
+        // Categorias ITIL (lista nativa)
+        var itilInicial = itil.estrategia === 'especifico' ? (itil.valor || 0) : 0;
+        u.carregarFonte('itilcategorias').then(function (lista) {
+            var wrap = box.querySelector('[data-ge-itil]');
+            if (!wrap) { return; }
+            var ops = [{ v: 0, t: itil.estrategia === 'resposta' ? '(definida pela resposta)' : '(padrao do GLPI)' }].concat((lista || []).map(function (c) { return { v: c.v, t: c.t }; }));
+            wrap.innerHTML = u.campoSelectBusca(idItil, '', ops, itilInicial);
+            wrap.querySelectorAll('.' + P + 'selbusca').forEach(u.ativarSelectBusca);
+        });
+
+        montarAtoresGeral(box.querySelector('[data-ge-atores]'), formId, podeEditar);
 
         var btn = box.querySelector('[data-ge-salvar]');
         if (!btn) { return; }
@@ -286,16 +299,13 @@
                 nome: nome,
                 categoria: cat ? parseInt(cat.value, 10) || 0 : f.categoria,
                 descricao: lerRich(idDesc),
-                header: lerRich(idHead),
-                ativo: box.querySelector('[data-sw="ativo"]').checked ? 1 : 0,
-                recursivo: box.querySelector('[data-sw="recursivo"]').checked ? 1 : 0
+                header: lerRich(idHead)
             };
             var ent = box.querySelector('[data-ge-ent] input[type="hidden"]');
             if (ent) { dados.entidade = parseInt(ent.value, 10) || 0; }
-            var fx = box.querySelector('[data-sw="fixado"]');
-            if (fx) { dados.fixado = fx.checked ? 1 : 0; }
-            var ly = box.querySelector('[data-ge="layout"]');
-            if (ly) { dados.layout = ly.value; }
+            var it = document.getElementById(idItil);
+            // So grava a categoria ITIL se mudou (assim a estrategia "resposta" nao e trocada sem querer)
+            if (it && itil.tem_destino && (parseInt(it.value, 10) || 0) !== itilInicial) { dados.categoria_itil = parseInt(it.value, 10) || 0; }
             var il = document.getElementById('ge_ilustracao_' + formId);
             if (il) { dados.ilustracao = il.value; }
             btn.disabled = true;
@@ -305,6 +315,69 @@
                 if (r && r.success && aoSalvar) { aoSalvar(dados); }
             });
         });
+    }
+
+    /** Requerentes, observadores e atribuidos do chamado gerado, com edicao rapida por ator. */
+    function montarAtoresGeral(area, formId, podeEditar) {
+        var u = U();
+        function carregar() {
+            u.ajax('painel_formulario', { form: formId }).then(function (r) {
+                var d = (r && r.success) ? r.dados : null;
+                if (!d) { area.innerHTML = '<span class="' + P + 'pn-vazio-txt">Nao foi possivel carregar os atores.</span>'; return; }
+                if (!(d.destino || {}).id) { area.innerHTML = '<span class="' + P + 'pn-vazio-txt">Crie o destino de chamado (aba Chamado gerado) para definir os atores.</span>'; return; }
+                var h = '';
+                (d.atores || []).forEach(function (a) {
+                    var tags = (a.usuarios || []).map(function (x) { return '<span class="' + P + 'pn-tag"><i class="ti ti-user"></i> <span>' + esc(x.t) + '</span></span>'; })
+                        .concat((a.grupos || []).map(function (x) { return '<span class="' + P + 'pn-tag"><i class="ti ti-users"></i> <span>' + esc(x.t) + '</span></span>'; }));
+                    if (!tags.length) { tags = [a.qtd_perguntas ? '<span class="' + P + 'pn-tag"><i class="ti ti-help-circle"></i> <span>pela resposta</span></span>' : '<span class="' + P + 'pn-vazio-txt">padrao do GLPI</span>']; }
+                    h += '<div class="' + P + 'ge-ator" data-ator="' + esc(a.slug) + '">'
+                        + '<span class="' + P + 'ge-ator-rot"><i class="' + esc(a.icone || 'ti ti-user') + '"></i> ' + esc(a.label) + '</span>'
+                        + '<span class="' + P + 'ge-ator-val">' + tags.join('') + '</span>'
+                        + (podeEditar ? '<button type="button" class="' + P + 'btn-icone" data-ator-editar title="Escolher ' + esc(a.label) + '"><i class="ti ti-edit"></i></button>' : '')
+                        + '<div class="' + P + 'ge-ator-editor" hidden></div></div>';
+                });
+                area.innerHTML = h;
+                area._atores = d.atores || [];
+            });
+        }
+        area.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-ator-editar]');
+            if (!b) { return; }
+            var linha = b.closest('[data-ator]');
+            var ed = linha.querySelector('.' + P + 'ge-ator-editor');
+            if (!ed.hidden) { ed.hidden = true; ed.innerHTML = ''; return; }
+            var slug = linha.getAttribute('data-ator');
+            var atual = (area._atores || []).filter(function (a) { return a.slug === slug; })[0] || { usuarios: [], grupos: [] };
+            var idU = uid('gau'), idG = uid('gag');
+            ed.hidden = false;
+            ed.innerHTML = '<div class="' + P + 'pn-duas-colunas"><div><span class="' + P + 'pn-sub"><i class="ti ti-user"></i> Usuarios</span>' + u.multiBusca(idU, [], []) + '</div>'
+                + '<div><span class="' + P + 'pn-sub"><i class="ti ti-users"></i> Grupos</span>' + u.multiBusca(idG, [], []) + '</div></div>'
+                + '<div class="' + P + 'ed-rodape"><button type="button" class="' + P + 'btn" data-ator-limpar title="Voltar ao padrao do GLPI"><i class="ti ti-eraser"></i> Limpar</button>'
+                + '<button type="button" class="' + P + 'btn ' + P + 'btn-primario" data-ator-salvar><i class="ti ti-device-floppy"></i> Salvar ' + esc((atual.label || '').toLowerCase()) + '</button></div>';
+            u.carregarFonte('atores').then(function (at) {
+                var cu = document.getElementById(idU), cg = document.getElementById(idG);
+                if (cu) { u.preencherMultiBusca(cu, (at && at.usuarios) || [], (atual.usuarios || []).map(function (x) { return x.v; })); u.ativarMultiBusca(cu); }
+                if (cg) { u.preencherMultiBusca(cg, (at && at.grupos) || [], (atual.grupos || []).map(function (x) { return x.v; })); u.ativarMultiBusca(cg); }
+            });
+            function salvar(limpar) {
+                var cu = document.getElementById(idU), cg = document.getElementById(idG);
+                u.ajax('painel_atores', {
+                    form: formId, destino: 0, ator: slug,
+                    usuarios: limpar ? [] : (cu ? u.coletarMultiBusca(cu) : []),
+                    grupos: limpar ? [] : (cg ? u.coletarMultiBusca(cg) : [])
+                }).then(function (r) {
+                    u.toast((r && r.message) || 'Falha.', !!(r && r.success));
+                    if (r && r.success) {
+                        carregar();
+                        // A aba "Chamado gerado" mostra os mesmos atores: o acordeao recarrega ao abrir aquela aba
+                        area.dispatchEvent(new CustomEvent('cf-atores-mudaram', { bubbles: true }));
+                    }
+                });
+            }
+            ed.querySelector('[data-ator-salvar]').addEventListener('click', function () { salvar(false); });
+            ed.querySelector('[data-ator-limpar]').addEventListener('click', function () { salvar(true); });
+        });
+        carregar();
     }
 
     function switchHtml(chave, rotulo, on) {
