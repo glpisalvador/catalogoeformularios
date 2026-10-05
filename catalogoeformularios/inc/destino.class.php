@@ -335,7 +335,9 @@ class PluginCatalogoeformulariosDestino extends CommonGLPI
                 $strategy = is_scalar($v) ? strtolower((string) $v) : '';
             }
         }
-        if (strpos($strategy, 'template') !== false) {
+        if ($strategy === 'from_form') {
+            $out['estrategia'] = 'formulario';
+        } elseif (strpos($strategy, 'template') !== false) {
             $out['estrategia'] = 'modelo';
         } elseif (strpos($strategy, 'answer') !== false) {
             $out['estrategia'] = 'resposta';
@@ -381,12 +383,35 @@ class PluginCatalogoeformulariosDestino extends CommonGLPI
                 'itemtype'       => $tipoClasse,
                 'name'           => $nome,
             ]);
+            if ($id) {
+                // Destino novo tambem usa a entidade do formulario
+                self::definirCampo((int) $id, 'entidade', 'formulario');
+            }
             return $id
                 ? ['ok' => true, 'msg' => 'Destino criado.', 'id' => (int) $id]
                 : ['ok' => false, 'msg' => 'Falha ao criar o destino.'];
         } catch (\Throwable $e) {
             return ['ok' => false, 'msg' => 'Erro ao criar destino: ' . $e->getMessage()];
         }
+    }
+
+    /**
+     * Faz todos os destinos do formulario usarem a entidade do formulario (estrategia nativa
+     * "From form"): a entidade escolhida na aba Geral e a do chamado gerado.
+     */
+    public static function entidadeDoFormulario(int $formId): array
+    {
+        $falhas = [];
+        foreach (self::listar($formId) as $dest) {
+            if (($dest['campos_estado']['entidade']['estrategia'] ?? '') === 'formulario') {
+                continue;
+            }
+            $r = self::definirCampo((int) $dest['id'], 'entidade', 'formulario');
+            if (empty($r['ok'])) {
+                $falhas[] = $dest['nome'] . ': ' . ($r['msg'] ?? '');
+            }
+        }
+        return $falhas ? ['ok' => false, 'msg' => implode('; ', $falhas)] : ['ok' => true, 'msg' => ''];
     }
 
     public static function renomear(int $destinoId, string $nome): array
@@ -637,7 +662,7 @@ class PluginCatalogoeformulariosDestino extends CommonGLPI
             }
             if (array_key_exists($chave, $cfg)) {
                 unset($cfg[$chave]);
-                $fd->update(['id' => $destinoId, 'config' => $cfg]);
+                self::gravarConfig($fd, $destinoId, $cfg);
             }
         } catch (\Throwable $e) {
         }
@@ -857,12 +882,34 @@ class PluginCatalogoeformulariosDestino extends CommonGLPI
             }
             $cfg[$chave] = $serial;
 
-            return $fd->update(['id' => $destinoId, 'config' => $cfg])
+            return self::gravarConfig($fd, $destinoId, $cfg)
                 ? ['ok' => true, 'msg' => 'Campo do destino atualizado.']
                 : ['ok' => false, 'msg' => 'Falha ao salvar a configuracao do destino.'];
         } catch (\Throwable $e) {
             return ['ok' => false, 'msg' => 'Configuracao nao aplicada (incompatibilidade de versao). Use o editor nativo. Detalhe: ' . $e->getMessage()];
         }
+    }
+
+    /**
+     * Grava a config do destino. O update nativo reprocessa todos os campos esperando o formato
+     * do formulario da tela (ex.: atores "Group-1") e quebra com o formato ja salvo ({"Group":[1]}).
+     * Nesse caso grava a coluna direto: a config ja esta no formato serializado nativo.
+     */
+    private static function gravarConfig(object $fd, int $destinoId, array $cfg): bool
+    {
+        global $DB;
+        try {
+            if ($fd->update(['id' => $destinoId, 'config' => $cfg])) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            // segue para a gravacao direta
+        }
+        return (bool) $DB->update(
+            'glpi_forms_destinations_formdestinations',
+            ['config' => json_encode($cfg, JSON_UNESCAPED_UNICODE)],
+            ['id' => $destinoId]
+        );
     }
 
     /** Resolve o case do enum de estrategia por nome/heuristica. */
@@ -874,6 +921,12 @@ class PluginCatalogoeformulariosDestino extends CommonGLPI
 
         if ($meaning === 'modelo') {
             $cands = ['FROM_TEMPLATE', 'TEMPLATE'];
+        } elseif ($meaning === 'formulario') {
+            // Entidade: o chamado recebe a entidade do proprio formulario
+            if (!defined("$enumClass::FROM_FORM")) {
+                return null;
+            }
+            return constant("$enumClass::FROM_FORM");
         } elseif ($meaning === 'resposta') {
             $cands = $temPergunta
                 ? ['SPECIFIC_ANSWER', 'FROM_SPECIFIC_ANSWER', 'ANSWER']

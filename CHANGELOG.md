@@ -2,6 +2,12 @@
 
 O arquivo para download de cada versão está em [Releases](https://github.com/glpisalvador/catalogoeformularios/releases).
 
+## 3.0.4 — 2026-10-05
+
+- A **entidade escolhida na aba Geral** passa a ser a entidade do chamado gerado. Todos os destinos usam a estratégia nativa "From form": ao salvar a aba Geral, ao criar ou importar formulário, ao criar destino e, uma única vez na instalação, nos formulários existentes.
+- O campo "Cliente (entidade)" saiu da aba Chamado gerado para não haver duas regras concorrentes.
+- Correção: gravar campos do destino (categoria ITIL, SLAs e entidade) não falha mais em destinos com ator específico (por exemplo, um grupo observador fixo).
+
 ## 3.0.3 — 2026-10-05
 
 - A aba **Estrutura** foi incorporada à aba **Geral**: seções, perguntas, condições e botão Enviar ficam no mesmo lugar.

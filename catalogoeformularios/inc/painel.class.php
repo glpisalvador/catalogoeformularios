@@ -46,8 +46,9 @@ class PluginCatalogoeformulariosPainel extends CommonGLPI
     private const CAMPOS = [
         'categoria', 'tipo', 'urgencia', 'status', 'origem',
         'sla_tto', 'sla_ttr', 'ola_tto', 'ola_ttr',
-        'localizacao', 'template', 'entidade',
+        'localizacao', 'template',
     ];
+    // A entidade do chamado nao fica aqui: e sempre a do formulario (aba Geral)
 
     /** Campos destacados no cabecalho do painel (visao rapida do chamado). */
     private const DESTAQUES = ['categoria', 'sla_tto', 'sla_ttr'];

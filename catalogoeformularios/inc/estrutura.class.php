@@ -1002,6 +1002,13 @@ class PluginCatalogoeformulariosEstrutura extends CommonGLPI
         if (count($dados) > 1 && !(new Form())->update($dados)) {
             return ['ok' => false, 'msg' => 'Falha ao salvar o formulario.'];
         }
+        // A entidade da aba Geral e a do chamado gerado (estrategia nativa "From form" em todos os destinos)
+        if (array_key_exists('entidade', $d)) {
+            $re = PluginCatalogoeformulariosDestino::entidadeDoFormulario($formId);
+            if (empty($re['ok'])) {
+                return ['ok' => false, 'msg' => 'Dados salvos, mas a entidade do chamado nao: ' . $re['msg']];
+            }
+        }
         // Categoria ITIL do chamado gerado (campo do destino de chamado; 0 = padrao do GLPI)
         if (array_key_exists('categoria_itil', $d)) {
             $cat = (int) $d['categoria_itil'];
