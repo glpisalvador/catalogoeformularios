@@ -958,6 +958,15 @@ class PluginCatalogoeformulariosEstrutura extends CommonGLPI
             // Ids nativos (letras, numeros, - e _) ou enviados pelo usuario ("custom:arquivo.png")
             $dados['illustration'] = preg_replace('/[^A-Za-z0-9_.:\-]/', '', (string) $d['ilustracao']);
         }
+        // Entidade: so uma das entidades ativas de quem edita (a atual continua valendo)
+        if (array_key_exists('entidade', $d) && (int) $d['entidade'] !== (int) $f['entities_id']) {
+            $ent = (int) $d['entidade'];
+            if (!in_array($ent, array_map('intval', $_SESSION['glpiactiveentities'] ?? []), true)
+                || countElementsInTable('glpi_entities', ['id' => $ent]) === 0) {
+                return ['ok' => false, 'msg' => 'Entidade invalida ou fora das suas entidades ativas.'];
+            }
+            $dados['entities_id'] = $ent;
+        }
         if (array_key_exists('is_pinned', $f) && array_key_exists('fixado', $d)) {
             $dados['is_pinned'] = !empty($d['fixado']) ? 1 : 0;
         }

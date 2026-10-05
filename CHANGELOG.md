@@ -2,6 +2,12 @@
 
 O arquivo para download de cada versão está em [Releases](https://github.com/glpisalvador/catalogoeformularios/releases).
 
+## 3.0.1 — 2026-10-05
+
+- No acordeão, **"+ Pergunta"** passou a ser o botão em destaque (laranja). **"+ Seção"** ficou pequeno e cinza.
+- **Descrições e cabeçalho** ficam num acordeão fechado em todos os lugares do formulário (aba Geral, pergunta, seção e modal de seção). O editor de texto rico só abre quando você expande o acordeão.
+- **Entidade do formulário** pode ser alterada na aba Geral, entre as entidades ativas de quem edita.
+
 ## 3.0.0 — 2026-10-05
 
 Primeira versão como Catálogo e Formulários (sucessor do "Catálogo de Serviços"), autor GLPI Salvador, GLPI 11 e 12.
