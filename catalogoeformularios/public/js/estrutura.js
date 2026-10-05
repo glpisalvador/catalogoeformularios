@@ -27,7 +27,7 @@
     // -----------------------------------------------------------------
     var ricos = [];
     function richHtml(id, valor) {
-        return '<textarea id="' + id + '" class="' + P + 'input" rows="4">' + esc(valor || '') + '</textarea>';
+        return '<textarea id="' + id + '" data-rich class="' + P + 'input" rows="4">' + esc(valor || '') + '</textarea>';
     }
 
     /**
@@ -35,11 +35,16 @@
      * primeira abertura. Enquanto fechado, salvar devolve o conteudo original (valor do textarea).
      */
     function richSanfona(id, rotulo, valor) {
-        var tem = String(valor || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim() !== '';
-        return '<div class="' + P + 'ed-sanfona" data-sanfona="' + id + '">'
-            + '<button type="button" class="' + P + 'ed-sanfona-cab" data-sanfona-cab><i class="ti ti-chevron-right"></i> <span>' + esc(rotulo) + '</span>'
-            + (tem ? '<span class="' + P + 'ed-badge">preenchido</span>' : '<span class="' + P + 'ed-sanfona-vazio">vazio</span>') + '</button>'
-            + '<div class="' + P + 'ed-sanfona-corpo" hidden>' + richHtml(id, valor) + '</div></div>';
+        return sanfona(id, '<span>' + esc(rotulo) + '</span>', temTexto(valor) ? '<span class="' + P + 'ed-badge">preenchido</span>' : '<span class="' + P + 'ed-sanfona-vazio">vazio</span>', richHtml(id, valor));
+    }
+    function temTexto(v) { return String(v || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim() !== ''; }
+
+    /** Acordeao fechado generico; na primeira abertura inicia os editores ricos de dentro e avisa (cf-sanfona-aberta). */
+    function sanfona(chave, rotuloHtml, ladoHtml, corpoHtml) {
+        return '<div class="' + P + 'ed-sanfona" data-sanfona="' + esc(chave) + '">'
+            + '<button type="button" class="' + P + 'ed-sanfona-cab" data-sanfona-cab><i class="ti ti-chevron-right"></i> ' + rotuloHtml
+            + '<span class="' + P + 'ed-sanfona-lado">' + (ladoHtml || '') + '</span></button>'
+            + '<div class="' + P + 'ed-sanfona-corpo" hidden>' + corpoHtml + '</div></div>';
     }
     document.addEventListener('click', function (e) {
         var cab = e.target.closest('[data-sanfona-cab]');
@@ -52,11 +57,10 @@
         corpo.hidden = !abrir;
         bloco.classList.toggle('aberta', abrir);
         cab.querySelector('i').className = 'ti ti-chevron-' + (abrir ? 'down' : 'right');
-        var id = bloco.getAttribute('data-sanfona');
         if (abrir && !bloco.getAttribute('data-iniciado')) {
             bloco.setAttribute('data-iniciado', '1');
-            var ta = document.getElementById(id);
-            iniciarRich(id, ta ? ta.value : '');
+            corpo.querySelectorAll('textarea[data-rich]').forEach(function (ta) { iniciarRich(ta.id, ta.value); });
+            bloco.dispatchEvent(new CustomEvent('cf-sanfona-aberta', { bubbles: true }));
         }
     }, true);
     function iniciarRich(id, valor) {
@@ -240,6 +244,7 @@
         var idDesc = uid('ge_desc'), idHead = uid('ge_head'), idItil = uid('ge_itil');
         var optCat = [{ v: 0, t: '(Raiz do catalogo)' }].concat((CFG().categorias || []).map(function (c) { return { v: c.id, t: c.nome }; }));
         var itil = f.categoria_itil || { tem_destino: false, estrategia: 'modelo', valor: 0 };
+        var botaoSalvar = podeEditar ? '<div class="' + P + 'ed-rodape"><button type="button" class="' + P + 'btn ' + P + 'btn-primario" data-ge-salvar><i class="ti ti-device-floppy"></i> Salvar</button></div>' : '';
 
         // 1. Nome, entidade, categoria ITIL e categoria do catalogo
         var h = '<div class="' + P + 'ed-grade">';
@@ -258,20 +263,28 @@
             + '</div>';
         h += u.campoSelectBusca(uid('ge_cat'), 'Categoria do catalogo', optCat, f.categoria || 0).replace('<div class="' + P + 'selbusca">', '<div class="' + P + 'selbusca" data-ge-cat>');
         h += '</div>';
+        h += botaoSalvar;
 
-        // 2. Descricao e cabecalho (fechados)
-        h += richSanfona(idDesc, 'Descricao (aparece no catalogo)', f.descricao || '');
-        h += richSanfona(idHead, 'Cabecalho (aparece no topo do formulario)', f.header || '');
+        // 2. Atores do chamado: um acordeao fechado por ator
+        h += '<div class="' + P + 'ge-secao"><span class="' + P + 'ge-secao-tit"><i class="ti ti-users"></i> Atores do chamado gerado</span>'
+            + '<div data-ge-atores><span class="' + P + 'pn-vazio-txt">carregando...</span></div></div>';
 
-        // 3. Atores do chamado (ver e escolher rapido; cada ator salva na hora)
-        h += '<div class="' + P + 'campo"><label><i class="ti ti-users"></i> Atores do chamado gerado</label><div class="' + P + 'ge-atores" data-ge-atores><span class="' + P + 'pn-vazio-txt">carregando...</span></div></div>';
+        // 3. Estrutura do formulario (secoes, perguntas, condicoes, botao Enviar)
+        h += '<div class="' + P + 'ge-secao"><span class="' + P + 'ge-secao-tit"><i class="ti ti-layout-list"></i> Estrutura do formulario</span>'
+            + '<div data-ge-estrutura><div class="' + P + 'pn-carregando"><i class="ti ti-loader"></i> Carregando...</div></div></div>';
 
-        // 4. Icone por ultimo, na largura toda
-        if (f.tem_ilustracao) { h += '<div class="' + P + 'ge-icone">' + u.campoIlustracao('ge_ilustracao_' + formId, 'Icone do formulario', f.ilustracao || '') + '</div>'; }
+        // 4. Descricao, cabecalho e icone num unico acordeao fechado
+        var preenchidos = [];
+        if (temTexto(f.descricao)) { preenchidos.push('descricao'); }
+        if (temTexto(f.header)) { preenchidos.push('cabecalho'); }
+        if (f.tem_ilustracao && f.ilustracao) { preenchidos.push('icone'); }
+        var corpo = '<div class="' + P + 'campo"><label>Descricao (aparece no catalogo)</label>' + richHtml(idDesc, f.descricao || '') + '</div>'
+            + '<div class="' + P + 'campo"><label>Cabecalho (aparece no topo do formulario)</label>' + richHtml(idHead, f.header || '') + '</div>'
+            + (f.tem_ilustracao ? '<div class="' + P + 'ge-icone">' + u.campoIlustracao('ge_ilustracao_' + formId, 'Icone do formulario', f.ilustracao || '') + '</div>' : '')
+            + botaoSalvar;
+        h += sanfona('ge_textos_' + formId, '<i class="ti ti-file-text"></i> <span>Descricao, cabecalho e icone</span>',
+            preenchidos.length ? '<span class="' + P + 'ed-badge">' + esc(preenchidos.join(', ')) + '</span>' : '<span class="' + P + 'ed-sanfona-vazio">vazio</span>', corpo);
 
-        if (podeEditar) {
-            h += '<div class="' + P + 'ed-rodape"><button type="button" class="' + P + 'btn ' + P + 'btn-primario" data-ge-salvar><i class="ti ti-device-floppy"></i> Salvar</button></div>';
-        }
         removerRicosDentro(box);
         box.innerHTML = h;
         box.querySelectorAll('.' + P + 'selbusca').forEach(u.ativarSelectBusca);
@@ -289,9 +302,7 @@
 
         montarAtoresGeral(box.querySelector('[data-ge-atores]'), formId, podeEditar);
 
-        var btn = box.querySelector('[data-ge-salvar]');
-        if (!btn) { return; }
-        btn.addEventListener('click', function () {
+        function salvar(btn) {
             var nome = box.querySelector('[data-ge="nome"]').value.trim();
             if (!nome) { u.toast('Informe o nome do formulario.', false); return; }
             var cat = box.querySelector('[data-ge-cat] input[type="hidden"]');
@@ -312,44 +323,45 @@
             u.ajax('geral_salvar', { form: formId, dados_json: JSON.stringify(dados) }).then(function (r) {
                 btn.disabled = false;
                 u.toast((r && r.message) || 'Falha.', !!(r && r.success));
-                if (r && r.success && aoSalvar) { aoSalvar(dados); }
+                if (r && r.success) {
+                    if (typeof dados.categoria_itil !== 'undefined') { itilInicial = dados.categoria_itil; }
+                    if (aoSalvar) { aoSalvar(dados); }
+                }
             });
-        });
+        }
+        box.querySelectorAll('[data-ge-salvar]').forEach(function (b) { b.addEventListener('click', function () { salvar(b); }); });
     }
 
-    /** Requerentes, observadores e atribuidos do chamado gerado, com edicao rapida por ator. */
+    /** Requerentes, observadores e atribuidos do chamado gerado: cada um num acordeao fechado com a escolha de usuarios e grupos. */
     function montarAtoresGeral(area, formId, podeEditar) {
         var u = U();
+        function resumo(a) {
+            var tags = (a.usuarios || []).map(function (x) { return '<span class="' + P + 'pn-tag"><i class="ti ti-user"></i> <span>' + esc(x.t) + '</span></span>'; })
+                .concat((a.grupos || []).map(function (x) { return '<span class="' + P + 'pn-tag"><i class="ti ti-users"></i> <span>' + esc(x.t) + '</span></span>'; }));
+            if (tags.length) { return tags.join(''); }
+            return a.qtd_perguntas ? '<span class="' + P + 'pn-tag"><i class="ti ti-help-circle"></i> <span>pela resposta</span></span>' : '<span class="' + P + 'ed-sanfona-vazio">padrao do GLPI</span>';
+        }
         function carregar() {
             u.ajax('painel_formulario', { form: formId }).then(function (r) {
                 var d = (r && r.success) ? r.dados : null;
                 if (!d) { area.innerHTML = '<span class="' + P + 'pn-vazio-txt">Nao foi possivel carregar os atores.</span>'; return; }
                 if (!(d.destino || {}).id) { area.innerHTML = '<span class="' + P + 'pn-vazio-txt">Crie o destino de chamado (aba Chamado gerado) para definir os atores.</span>'; return; }
-                var h = '';
-                (d.atores || []).forEach(function (a) {
-                    var tags = (a.usuarios || []).map(function (x) { return '<span class="' + P + 'pn-tag"><i class="ti ti-user"></i> <span>' + esc(x.t) + '</span></span>'; })
-                        .concat((a.grupos || []).map(function (x) { return '<span class="' + P + 'pn-tag"><i class="ti ti-users"></i> <span>' + esc(x.t) + '</span></span>'; }));
-                    if (!tags.length) { tags = [a.qtd_perguntas ? '<span class="' + P + 'pn-tag"><i class="ti ti-help-circle"></i> <span>pela resposta</span></span>' : '<span class="' + P + 'pn-vazio-txt">padrao do GLPI</span>']; }
-                    h += '<div class="' + P + 'ge-ator" data-ator="' + esc(a.slug) + '">'
-                        + '<span class="' + P + 'ge-ator-rot"><i class="' + esc(a.icone || 'ti ti-user') + '"></i> ' + esc(a.label) + '</span>'
-                        + '<span class="' + P + 'ge-ator-val">' + tags.join('') + '</span>'
-                        + (podeEditar ? '<button type="button" class="' + P + 'btn-icone" data-ator-editar title="Escolher ' + esc(a.label) + '"><i class="ti ti-edit"></i></button>' : '')
-                        + '<div class="' + P + 'ge-ator-editor" hidden></div></div>';
-                });
-                area.innerHTML = h;
                 area._atores = d.atores || [];
+                area.innerHTML = area._atores.map(function (a) {
+                    var corpo = podeEditar ? '<div class="' + P + 'ge-ator-editor" data-ator="' + esc(a.slug) + '"><span class="' + P + 'pn-vazio-txt">carregando...</span></div>'
+                        : '<div class="' + P + 'ge-ator-val">' + resumo(a) + '</div>';
+                    return sanfona('ator_' + formId + '_' + a.slug, '<i class="' + esc(a.icone || 'ti ti-user') + '"></i> <span>' + esc(a.label) + '</span>',
+                        '<span class="' + P + 'ge-ator-val">' + resumo(a) + '</span>', corpo);
+                }).join('');
             });
         }
-        area.addEventListener('click', function (e) {
-            var b = e.target.closest('[data-ator-editar]');
-            if (!b) { return; }
-            var linha = b.closest('[data-ator]');
-            var ed = linha.querySelector('.' + P + 'ge-ator-editor');
-            if (!ed.hidden) { ed.hidden = true; ed.innerHTML = ''; return; }
-            var slug = linha.getAttribute('data-ator');
+        // Editor de cada ator montado so quando o acordeao abre
+        area.addEventListener('cf-sanfona-aberta', function (e) {
+            var ed = e.target.querySelector('.' + P + 'ge-ator-editor');
+            if (!ed) { return; }
+            var slug = ed.getAttribute('data-ator');
             var atual = (area._atores || []).filter(function (a) { return a.slug === slug; })[0] || { usuarios: [], grupos: [] };
             var idU = uid('gau'), idG = uid('gag');
-            ed.hidden = false;
             ed.innerHTML = '<div class="' + P + 'pn-duas-colunas"><div><span class="' + P + 'pn-sub"><i class="ti ti-user"></i> Usuarios</span>' + u.multiBusca(idU, [], []) + '</div>'
                 + '<div><span class="' + P + 'pn-sub"><i class="ti ti-users"></i> Grupos</span>' + u.multiBusca(idG, [], []) + '</div></div>'
                 + '<div class="' + P + 'ed-rodape"><button type="button" class="' + P + 'btn" data-ator-limpar title="Voltar ao padrao do GLPI"><i class="ti ti-eraser"></i> Limpar</button>'
@@ -956,7 +968,20 @@
             box.innerHTML = '<div class="' + P + 'pn-carregando"><i class="ti ti-loader"></i> Carregando...</div>';
             var recarregar = function () {
                 carregar(formId).then(function (est) {
-                    if (aba === 'geral') { montarGeral(box, formId, est, aoMudar); }
+                    if (aba === 'geral') {
+                        montarGeral(box, formId, est, aoMudar);
+                        // A estrutura fica dentro da aba Geral e recarrega sozinha (sem redesenhar os campos de cima)
+                        var slot = box.querySelector('[data-ge-estrutura]');
+                        var recEstrutura = function () {
+                            carregar(formId).then(function (e2) {
+                                montarEstrutura(slot, formId, e2, recEstrutura);
+                                if (aoMudar) { aoMudar(e2, 'estrutura'); }
+                            });
+                        };
+                        slot.addEventListener('ed-recarregar', recEstrutura);
+                        montarEstrutura(slot, formId, est, recEstrutura);
+                        if (aoMudar) { aoMudar(est, 'estrutura'); }
+                    }
                     else if (aba === 'estrutura') { montarEstrutura(box, formId, est, recarregar); }
                     else { montarDestinos(box, formId, est, recarregar); }
                     if (aoMudar && aba !== 'geral') { aoMudar(est); }

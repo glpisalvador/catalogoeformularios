@@ -3142,8 +3142,7 @@ var _previewTimer  = null;
 
         // Abas: tudo do formulario sem sair do acordeao
         var abas = [
-            { k: 'geral',     ic: 'ti ti-settings',    t: 'Geral' },
-            { k: 'estrutura', ic: 'ti ti-layout-list', t: 'Estrutura', n: f.qtd_perguntas },
+            { k: 'geral',     ic: 'ti ti-settings',    t: 'Geral', n: f.qtd_perguntas },
             { k: 'chamado',   ic: 'ti ti-ticket',      t: 'Chamado gerado', n: (d.destino || {}).total },
             { k: 'acesso',    ic: 'ti ti-shield',      t: 'Quem visualiza' }
         ];
@@ -3155,7 +3154,6 @@ var _previewTimer  = null;
         html += '</div>';
 
         html += '<div class="catalogoeformularios-pn-aba-corpo" data-pn-corpo="geral"><div data-pn-geral></div>' + pnCardEstrutura(d) + '</div>';
-        html += '<div class="catalogoeformularios-pn-aba-corpo" data-pn-corpo="estrutura"><div data-pn-estrutura></div></div>';
         html += '<div class="catalogoeformularios-pn-aba-corpo" data-pn-corpo="chamado"><div class="catalogoeformularios-pn-grade">'
             + pnCardChamado(d) + pnCardAtores(d)
             + '<section class="catalogoeformularios-pn-card catalogoeformularios-pn-card-larga"><header class="catalogoeformularios-pn-card-cab"><i class="ti ti-git-branch"></i> <span>Destinos e quando cada um e criado</span>'
@@ -3177,7 +3175,12 @@ var _previewTimer  = null;
     /** Mostra uma aba do acordeao; Geral, Estrutura e Destinos carregam o editor na primeira vez. */
     function pnMostrarAba(box, d, aba) {
         var formId = (d.form || {}).id || 0;
+        // A estrutura agora fica dentro da aba Geral
+        var rolarEstrutura = aba === 'estrutura';
         if (!box.querySelector('[data-pn-corpo="' + aba + '"]')) { aba = 'geral'; }
+        if (rolarEstrutura) {
+            setTimeout(function () { var s = box.querySelector('[data-ge-estrutura]'); if (s) { s.scrollIntoView({ block: 'start' }); } }, 600);
+        }
         estado.pnAba = aba;
         // Atores mudaram pela aba Geral: recarrega o painel ja nesta aba
         if (aba === 'chamado' && box._atoresSujos) { box._atoresSujos = false; pnRecarregar(); return; }
@@ -3188,22 +3191,23 @@ var _previewTimer  = null;
         if (!ed) { return; }
         var alvo = null, tipo = '';
         if (aba === 'geral') { alvo = box.querySelector('[data-pn-geral]'); tipo = 'geral'; }
-        if (aba === 'estrutura') { alvo = box.querySelector('[data-pn-estrutura]'); tipo = 'estrutura'; }
         if (aba === 'chamado') { alvo = box.querySelector('[data-pn-destinos]'); tipo = 'destinos'; }
         if (alvo && !alvo.getAttribute('data-montado')) {
             alvo.setAttribute('data-montado', '1');
-            ed.montar(tipo, alvo, formId, function (info) {
+            ed.montar(tipo, alvo, formId, function (info, origem) {
+                // A estrutura dentro da aba Geral avisa com origem 'estrutura'
+                var qual = origem === 'estrutura' ? 'estrutura' : tipo;
                 // Geral salvo: atualiza a linha do formulario na lista e o cabecalho do acordeao
-                if (tipo === 'geral') {
+                if (qual === 'geral') {
                     if (info && typeof info.ativo !== 'undefined') { aplicarAtivoNaTela(formId, !!info.ativo, false); }
                     recarregarAtual({ silencioso: true });
                     return;
                 }
                 // Estrutura mudou: atualiza o contador da aba e as perguntas usadas pelos campos do chamado
-                if (tipo === 'estrutura' && info) {
+                if (qual === 'estrutura' && info) {
                     var n = 0;
                     (info.secoes || []).forEach(function (s) { (s.blocos || []).forEach(function (b) { if (b.bloco === 'pergunta') { n++; } }); });
-                    var c = box.querySelector('[data-pn-aba="estrutura"] .catalogoeformularios-pn-aba-n');
+                    var c = box.querySelector('[data-pn-aba="geral"] .catalogoeformularios-pn-aba-n');
                     if (c) { c.textContent = n; }
                     if (estado.painelDados) {
                         estado.painelDados.perguntas = [];

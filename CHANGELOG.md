@@ -2,6 +2,12 @@
 
 O arquivo para download de cada versão está em [Releases](https://github.com/glpisalvador/catalogoeformularios/releases).
 
+## 3.0.3 — 2026-10-05
+
+- A aba **Estrutura** foi incorporada à aba **Geral**: seções, perguntas, condições e botão Enviar ficam no mesmo lugar.
+- Cada ator (requerentes, observadores e atribuído a) virou um **acordeão fechado** que mostra o resumo no título e abre a escolha de usuários e grupos.
+- **Descrição, cabeçalho e ícone** ficam juntos num único acordeão fechado no fim da aba, antes do cartão "Estrutura e ações".
+
 ## 3.0.2 — 2026-10-05
 
 - Aba Geral reorganizada: Nome, Entidade, **Categoria ITIL do chamado gerado** (nova, escolha rápida), Categoria do catálogo, descrição e cabeçalho fechados, **Atores do chamado** (ver e escolher rápido) e o ícone por último, na largura toda.
