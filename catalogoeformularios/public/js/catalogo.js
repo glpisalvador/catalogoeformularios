@@ -3116,10 +3116,24 @@ var _previewTimer  = null;
         html += pnResumoChips(d);
         html += '<span class="catalogoeformularios-pn-cab-acoes">';
         if (podeEditar) {
+            // Opcoes do formulario na propria barra: cada uma salva ao alterar
+            if (f.tem_layout) {
+                html += '<select class="catalogoeformularios-select catalogoeformularios-pn-layout" data-pn-geral-campo="layout" title="Exibicao do formulario">'
+                     + '<option value="step_by_step"' + (f.layout !== 'single_page' ? ' selected' : '') + '>Passo a passo</option>'
+                     + '<option value="single_page"' + (f.layout === 'single_page' ? ' selected' : '') + '>Pagina unica</option></select>';
+            }
             html += '<label class="catalogoeformularios-pn-switch" title="Ativar ou desativar este formulario no catalogo">'
                  + '<input type="checkbox" data-pn-ativo="1"' + (f.ativo ? ' checked' : '') + '>'
                  + '<span class="trilho"></span>'
                  + '<span class="rot" data-pn-ativo-rot>' + (f.ativo ? 'Ativo' : 'Inativo') + '</span></label>';
+            html += '<label class="catalogoeformularios-pn-switch" title="Visivel tambem nas entidades filhas">'
+                 + '<input type="checkbox" data-pn-geral-campo="recursivo"' + (f.recursivo ? ' checked' : '') + '>'
+                 + '<span class="trilho"></span><span class="rot">Subentidades</span></label>';
+            if (f.tem_fixado) {
+                html += '<label class="catalogoeformularios-pn-switch" title="Fixado no topo do catalogo de servicos">'
+                     + '<input type="checkbox" data-pn-geral-campo="fixado"' + (f.fixado ? ' checked' : '') + '>'
+                     + '<span class="trilho"></span><span class="rot">Fixado no topo</span></label>';
+            }
         }
         html += '<button type="button" class="catalogoeformularios-btn-icone" data-pn-acao="recarregar" title="Recarregar o painel"><i class="ti ti-refresh"></i></button>';
         html += '<a class="catalogoeformularios-btn-icone" href="' + esc(d.url_nativo || '#') + '" target="_blank" rel="noopener" title="Abrir no editor nativo do GLPI"><i class="ti ti-external-link"></i></a>';
@@ -3165,6 +3179,8 @@ var _previewTimer  = null;
         var formId = (d.form || {}).id || 0;
         if (!box.querySelector('[data-pn-corpo="' + aba + '"]')) { aba = 'geral'; }
         estado.pnAba = aba;
+        // Atores mudaram pela aba Geral: recarrega o painel ja nesta aba
+        if (aba === 'chamado' && box._atoresSujos) { box._atoresSujos = false; pnRecarregar(); return; }
         try { window.localStorage.setItem('catalogoeformularios_pn_aba', aba); } catch (e) { /* sem armazenamento */ }
         box.querySelectorAll('[data-pn-aba]').forEach(function (b) { b.classList.toggle('ativa', b.getAttribute('data-pn-aba') === aba); });
         box.querySelectorAll('[data-pn-corpo]').forEach(function (c) { c.style.display = c.getAttribute('data-pn-corpo') === aba ? 'block' : 'none'; });
@@ -3410,6 +3426,28 @@ var _previewTimer  = null;
                 });
             });
         }
+
+        // Exibicao, subentidades e fixado: salvam na hora pela barra
+        box.querySelectorAll('[data-pn-geral-campo]').forEach(function (el) {
+            el.addEventListener('click', function (e) { e.stopPropagation(); });
+            el.addEventListener('change', function () {
+                var campo = el.getAttribute('data-pn-geral-campo');
+                var dados = {};
+                dados[campo] = el.type === 'checkbox' ? (el.checked ? 1 : 0) : el.value;
+                ajax('geral_salvar', { form: formId, dados_json: JSON.stringify(dados) }).then(function (r) {
+                    toast(r && r.success ? 'Formulario atualizado.' : ((r && r.message) || 'Falha.'), !!(r && r.success));
+                    if (r && r.success) {
+                        if (estado.painelDados && estado.painelDados.form) { estado.painelDados.form[campo] = el.type === 'checkbox' ? el.checked : el.value; }
+                        if (campo !== 'layout') { recarregarArvore(); }
+                    } else if (el.type === 'checkbox') {
+                        el.checked = !el.checked;
+                    }
+                });
+            });
+        });
+
+        // Atores alterados pela aba Geral: a aba Chamado gerado e redesenhada ao ser aberta
+        box.addEventListener('cf-atores-mudaram', function () { box._atoresSujos = true; });
 
         // Campos escalares do chamado
         box.querySelectorAll('.catalogoeformularios-pn-campo[data-pn-campo]').forEach(function (row) {
