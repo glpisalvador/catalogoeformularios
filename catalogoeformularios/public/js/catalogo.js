@@ -3070,10 +3070,10 @@ var _previewTimer  = null;
     function pnChipHtml(icone, rotulo, valor) {
         var tem = valor !== undefined && valor !== null && String(valor).trim() !== '';
         var txt = tem ? String(valor) : 'padrao';
+        // Compacto (icone + valor) para caber na barra; o nome do selo fica no title
         return '<span class="catalogoeformularios-pn-chip' + (tem ? '' : ' vazio') + '" title="' + esc(rotulo + ': ' + txt) + '">'
             + '<i class="' + icone + '"></i>'
-            + '<b>' + esc(rotulo) + '</b>'
-            + '<span>' + esc(txt) + '</span></span>';
+            + (tem ? '<span>' + esc(txt) + '</span>' : '') + '</span>';
     }
 
     function pnCampoPorSlug(d, slug) {
@@ -3112,8 +3112,16 @@ var _previewTimer  = null;
         var html = '';
 
         html += '<div class="catalogoeformularios-pn-cab">';
-        html += '<span class="catalogoeformularios-pn-tit"><i class="ti ti-list-details"></i> <span>Painel de controle</span></span>';
+        html += '<span class="catalogoeformularios-pn-tit" title="Painel de controle do formulario"><i class="ti ti-list-details"></i> <span class="rot-opc">Painel</span></span>';
         html += pnResumoChips(d);
+        // Estrutura e acoes: contadores e botoes na propria barra
+        html += '<span class="catalogoeformularios-pn-metr">'
+             + '<span title="Secoes"><i class="ti ti-layout-list"></i> <b data-pn-met="secoes">' + (f.qtd_secoes || 0) + '</b></span>'
+             + '<span title="Perguntas"><i class="ti ti-help-circle"></i> <b data-pn-met="perguntas">' + (f.qtd_perguntas || 0) + '</b></span>'
+             + '<span title="Destinos"><i class="ti ti-target"></i> <b>' + ((d.destino || {}).total || 0) + '</b></span>'
+             + '<span title="Envios"><i class="ti ti-star"></i> <b>' + (f.usos || 0) + '</b></span>'
+             + (f.rascunho ? '<span class="alerta" title="Rascunho: falta algo para o formulario funcionar"><i class="ti ti-alert-triangle"></i></span>' : '')
+             + '</span>';
         html += '<span class="catalogoeformularios-pn-cab-acoes">';
         if (podeEditar) {
             // Opcoes do formulario na propria barra: cada uma salva ao alterar
@@ -3128,15 +3136,28 @@ var _previewTimer  = null;
                  + '<span class="rot" data-pn-ativo-rot>' + (f.ativo ? 'Ativo' : 'Inativo') + '</span></label>';
             html += '<label class="catalogoeformularios-pn-switch" title="Visivel tambem nas entidades filhas">'
                  + '<input type="checkbox" data-pn-geral-campo="recursivo"' + (f.recursivo ? ' checked' : '') + '>'
-                 + '<span class="trilho"></span><span class="rot">Subentidades</span></label>';
+                 + '<span class="trilho"></span><span class="rot rot-opc">Subentidades</span></label>';
             if (f.tem_fixado) {
                 html += '<label class="catalogoeformularios-pn-switch" title="Fixado no topo do catalogo de servicos">'
                      + '<input type="checkbox" data-pn-geral-campo="fixado"' + (f.fixado ? ' checked' : '') + '>'
-                     + '<span class="trilho"></span><span class="rot">Fixado no topo</span></label>';
+                     + '<span class="trilho"></span><span class="rot rot-opc">Fixado</span></label>';
             }
         }
-        html += '<button type="button" class="catalogoeformularios-btn-icone" data-pn-acao="recarregar" title="Recarregar o painel"><i class="ti ti-refresh"></i></button>';
-        html += '<a class="catalogoeformularios-btn-icone" href="' + esc(d.url_nativo || '#') + '" target="_blank" rel="noopener" title="Abrir no editor nativo do GLPI"><i class="ti ti-external-link"></i></a>';
+        // Acoes do formulario num menu, para a barra caber numa linha
+        html += '<span class="catalogoeformularios-pn-menu-wrap">'
+             + '<button type="button" class="catalogoeformularios-btn-icone" data-pn-menu title="Acoes do formulario"><i class="ti ti-dots-vertical"></i></button>'
+             + '<span class="catalogoeformularios-pn-menu" hidden>';
+        if (podeEditar) {
+            html += '<button type="button" data-acao="editar-form" data-id="' + f.id + '"><i class="ti ti-edit"></i> Editar (janela)</button>'
+                 + '<button type="button" data-acao="editar-secoes" data-id="' + f.id + '"><i class="ti ti-layout-list"></i> Secoes (janela)</button>'
+                 + '<button type="button" data-acao="duplicar-form" data-id="' + f.id + '"><i class="ti ti-copy"></i> Duplicar</button>';
+        }
+        html += '<button type="button" data-pn-acao="recarregar"><i class="ti ti-refresh"></i> Recarregar o painel</button>'
+             + '<a href="' + esc(d.url_nativo || '#') + '" target="_blank" rel="noopener"><i class="ti ti-external-link"></i> Abrir no editor nativo</a>';
+        if (podeEditar) {
+            html += '<button type="button" class="perigo" data-acao="excluir-form" data-id="' + f.id + '"><i class="ti ti-trash"></i> Excluir</button>';
+        }
+        html += '</span></span>';
         html += '<button type="button" class="catalogoeformularios-btn-icone" data-pn-acao="fechar" title="Fechar o painel"><i class="ti ti-x"></i></button>';
         html += '</span></div>';
 
@@ -3153,7 +3174,7 @@ var _previewTimer  = null;
         });
         html += '</div>';
 
-        html += '<div class="catalogoeformularios-pn-aba-corpo" data-pn-corpo="geral"><div data-pn-geral></div>' + pnCardEstrutura(d) + '</div>';
+        html += '<div class="catalogoeformularios-pn-aba-corpo" data-pn-corpo="geral"><div data-pn-geral></div></div>';
         html += '<div class="catalogoeformularios-pn-aba-corpo" data-pn-corpo="chamado"><div class="catalogoeformularios-pn-grade">'
             + pnCardChamado(d) + pnCardAtores(d)
             + '<section class="catalogoeformularios-pn-card catalogoeformularios-pn-card-larga"><header class="catalogoeformularios-pn-card-cab"><i class="ti ti-git-branch"></i> <span>Destinos e quando cada um e criado</span>'
@@ -3209,6 +3230,9 @@ var _previewTimer  = null;
                     (info.secoes || []).forEach(function (s) { (s.blocos || []).forEach(function (b) { if (b.bloco === 'pergunta') { n++; } }); });
                     var c = box.querySelector('[data-pn-aba="geral"] .catalogoeformularios-pn-aba-n');
                     if (c) { c.textContent = n; }
+                    var mp = box.querySelector('[data-pn-met="perguntas"]'), ms = box.querySelector('[data-pn-met="secoes"]');
+                    if (mp) { mp.textContent = n; }
+                    if (ms) { ms.textContent = (info.secoes || []).length; }
                     if (estado.painelDados) {
                         estado.painelDados.perguntas = [];
                         (info.origens || []).forEach(function (o) { estado.painelDados.perguntas.push({ v: o.id, t: o.nome }); });
@@ -3355,34 +3379,6 @@ var _previewTimer  = null;
         return h + '</section>';
     }
 
-    function pnCardEstrutura(d) {
-        var f = d.form || {};
-        var h = '<section class="catalogoeformularios-pn-card">';
-        h += '<header class="catalogoeformularios-pn-card-cab"><i class="ti ti-sitemap"></i> <span>Estrutura e acoes</span></header>';
-        h += '<div class="catalogoeformularios-pn-metricas">';
-        h += '<span><i class="ti ti-layout-list"></i> <b>' + (f.qtd_secoes || 0) + '</b> secao(oes)</span>';
-        h += '<span><i class="ti ti-help-circle"></i> <b>' + (f.qtd_perguntas || 0) + '</b> pergunta(s)</span>';
-        h += '<span><i class="ti ti-target"></i> <b>' + ((d.destino || {}).total || 0) + '</b> destino(s)</span>';
-        h += '<span><i class="ti ti-star"></i> <b>' + (f.usos || 0) + '</b> envio(s)</span>';
-        h += '</div>';
-        h += '<div class="catalogoeformularios-pn-linha-info">';
-        h += '<span class="catalogoeformularios-pn-marca"><i class="ti ti-folder"></i> ' + esc(f.categoria_nome || '') + '</span>';
-        h += '<span class="catalogoeformularios-pn-marca"><i class="ti ti-building"></i> ' + esc(f.entidade_nome || '') + '</span>';
-        if (f.recursivo) { h += '<span class="catalogoeformularios-pn-marca"><i class="ti ti-git-merge"></i> subentidades</span>'; }
-        if (f.rascunho)  { h += '<span class="catalogoeformularios-pn-marca alerta"><i class="ti ti-alert-triangle"></i> rascunho</span>'; }
-        h += '</div>';
-
-        if (podeEditar) {
-            h += '<div class="catalogoeformularios-pn-card-foot">';
-            h += '<button type="button" class="catalogoeformularios-btn" data-acao="editar-form" data-id="' + f.id + '"><i class="ti ti-edit"></i> Editar</button>';
-            h += '<button type="button" class="catalogoeformularios-btn" data-acao="editar-secoes" data-id="' + f.id + '"><i class="ti ti-layout-list"></i> Secoes</button>';
-            h += '<button type="button" class="catalogoeformularios-btn" data-acao="duplicar-form" data-id="' + f.id + '"><i class="ti ti-copy"></i> Duplicar</button>';
-            h += '<button type="button" class="catalogoeformularios-btn catalogoeformularios-btn-perigo" data-acao="excluir-form" data-id="' + f.id + '"><i class="ti ti-trash"></i> Excluir</button>';
-            h += '</div>';
-        }
-        return h + '</section>';
-    }
-
     // ----- Eventos do painel -----
 
     function pnLigar(box, d) {
@@ -3428,6 +3424,30 @@ var _previewTimer  = null;
                     toast((r && r.message) || 'Falha.', !!(r && r.success));
                     aplicarAtivoNaTela(formId, real, r && r.rascunho);
                 });
+            });
+        }
+
+        // Barra em uma linha: conforme a largura, esconde rotulos opcionais (ficam no title) e os contadores
+        var cab = box.querySelector('.catalogoeformularios-pn-cab');
+        if (cab && window.ResizeObserver) {
+            var ajustarCab = function () {
+                var w = cab.getBoundingClientRect().width;
+                cab.classList.toggle('estreita', w < 900);
+                cab.classList.toggle('muito-estreita', w < 700);
+            };
+            new ResizeObserver(ajustarCab).observe(cab);
+            ajustarCab();
+        }
+
+        // Menu de acoes da barra: abre/fecha; qualquer item ou clique fora fecha
+        var menuBtn = box.querySelector('[data-pn-menu]');
+        var menu = box.querySelector('.catalogoeformularios-pn-menu');
+        if (menuBtn && menu) {
+            menuBtn.addEventListener('click', function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; });
+            menu.addEventListener('click', function () { setTimeout(function () { menu.hidden = true; }, 0); });
+            document.addEventListener('click', function fora(e) {
+                if (!document.body.contains(menu)) { document.removeEventListener('click', fora); return; }
+                if (!menu.hidden && !menu.contains(e.target) && e.target !== menuBtn) { menu.hidden = true; }
             });
         }
 
