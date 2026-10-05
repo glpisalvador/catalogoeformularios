@@ -29,6 +29,36 @@
     function richHtml(id, valor) {
         return '<textarea id="' + id + '" class="' + P + 'input" rows="4">' + esc(valor || '') + '</textarea>';
     }
+
+    /**
+     * Descricao/cabecalho dentro de um acordeao fechado: o editor rico so e criado na
+     * primeira abertura. Enquanto fechado, salvar devolve o conteudo original (valor do textarea).
+     */
+    function richSanfona(id, rotulo, valor) {
+        var tem = String(valor || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim() !== '';
+        return '<div class="' + P + 'ed-sanfona" data-sanfona="' + id + '">'
+            + '<button type="button" class="' + P + 'ed-sanfona-cab" data-sanfona-cab><i class="ti ti-chevron-right"></i> <span>' + esc(rotulo) + '</span>'
+            + (tem ? '<span class="' + P + 'ed-badge">preenchido</span>' : '<span class="' + P + 'ed-sanfona-vazio">vazio</span>') + '</button>'
+            + '<div class="' + P + 'ed-sanfona-corpo" hidden>' + richHtml(id, valor) + '</div></div>';
+    }
+    document.addEventListener('click', function (e) {
+        var cab = e.target.closest('[data-sanfona-cab]');
+        if (!cab) { return; }
+        e.preventDefault();
+        e.stopPropagation();
+        var bloco = cab.closest('[data-sanfona]');
+        var corpo = bloco.querySelector('.' + P + 'ed-sanfona-corpo');
+        var abrir = corpo.hidden;
+        corpo.hidden = !abrir;
+        bloco.classList.toggle('aberta', abrir);
+        cab.querySelector('i').className = 'ti ti-chevron-' + (abrir ? 'down' : 'right');
+        var id = bloco.getAttribute('data-sanfona');
+        if (abrir && !bloco.getAttribute('data-iniciado')) {
+            bloco.setAttribute('data-iniciado', '1');
+            var ta = document.getElementById(id);
+            iniciarRich(id, ta ? ta.value : '');
+        }
+    }, true);
     function iniciarRich(id, valor) {
         if (!window.tinymce) { return; }
         var antigo = window.tinymce.get(id);
@@ -214,7 +244,14 @@
         h += '<div class="' + P + 'ed-col">';
         h += '<div class="' + P + 'campo"><label>Nome <span class="obrig">*</span></label><input type="text" class="' + P + 'input" data-ge="nome" value="' + esc(f.nome) + '"></div>';
         h += u.campoSelectBusca(uid('ge_cat'), 'Categoria do catalogo', optCat, f.categoria || 0).replace('<div class="' + P + 'selbusca">', '<div class="' + P + 'selbusca" data-ge-cat>');
-        h += '<div class="' + P + 'campo"><label>Entidade</label><div class="' + P + 'ed-leitura"><i class="ti ti-building"></i> ' + esc(f.entidade_nome || '') + '</div></div>';
+        // Entidades ativas do usuario; a atual do formulario entra mesmo se estiver fora delas
+        var optEnt = (CFG().entidades || []).map(function (e) { return { v: e.id, t: e.nome }; });
+        if (!optEnt.some(function (o) { return o.v === f.entidade; })) { optEnt.unshift({ v: f.entidade, t: f.entidade_nome || ('#' + f.entidade) }); }
+        if (podeEditar) {
+            h += u.campoSelectBusca(uid('ge_ent'), 'Entidade', optEnt, f.entidade).replace('<div class="' + P + 'selbusca">', '<div class="' + P + 'selbusca" data-ge-ent>');
+        } else {
+            h += '<div class="' + P + 'campo"><label>Entidade</label><div class="' + P + 'ed-leitura"><i class="ti ti-building"></i> ' + esc(f.entidade_nome || '') + '</div></div>';
+        }
         h += '<div class="' + P + 'ed-switches">';
         h += switchHtml('ativo', 'Ativo no catalogo', f.ativo);
         h += switchHtml('recursivo', 'Visivel nas subentidades', f.recursivo);
@@ -229,8 +266,8 @@
         h += '<div class="' + P + 'ed-col">';
         if (f.tem_ilustracao) { h += u.campoIlustracao('ge_ilustracao_' + formId, 'Icone do formulario', f.ilustracao || ''); }
         h += '</div></div>';
-        h += '<div class="' + P + 'campo"><label>Descricao (aparece no catalogo)</label>' + richHtml(idDesc, '') + '</div>';
-        h += '<div class="' + P + 'campo"><label>Cabecalho (aparece no topo do formulario)</label>' + richHtml(idHead, '') + '</div>';
+        h += richSanfona(idDesc, 'Descricao (aparece no catalogo)', f.descricao || '');
+        h += richSanfona(idHead, 'Cabecalho (aparece no topo do formulario)', f.header || '');
         if (podeEditar) {
             h += '<div class="' + P + 'ed-rodape"><button type="button" class="' + P + 'btn ' + P + 'btn-primario" data-ge-salvar><i class="ti ti-device-floppy"></i> Salvar</button></div>';
         }
@@ -238,8 +275,6 @@
         box.innerHTML = h;
         box.querySelectorAll('.' + P + 'selbusca').forEach(u.ativarSelectBusca);
         if (f.tem_ilustracao) { u.ativarSeletorIlustracao(box, 'ge_ilustracao_' + formId); }
-        iniciarRich(idDesc, f.descricao || '');
-        iniciarRich(idHead, f.header || '');
 
         var btn = box.querySelector('[data-ge-salvar]');
         if (!btn) { return; }
@@ -255,6 +290,8 @@
                 ativo: box.querySelector('[data-sw="ativo"]').checked ? 1 : 0,
                 recursivo: box.querySelector('[data-sw="recursivo"]').checked ? 1 : 0
             };
+            var ent = box.querySelector('[data-ge-ent] input[type="hidden"]');
+            if (ent) { dados.entidade = parseInt(ent.value, 10) || 0; }
             var fx = box.querySelector('[data-sw="fixado"]');
             if (fx) { dados.fixado = fx.checked ? 1 : 0; }
             var ly = box.querySelector('[data-ge="layout"]');
@@ -284,7 +321,7 @@
 
         var h = '<div class="' + P + 'ed-barra">';
         h += '<span class="' + P + 'ed-dica"><i class="ti ti-info-circle"></i> Arraste pelas alcas para reordenar perguntas e blocos, inclusive entre secoes. Clique numa linha para editar.</span>';
-        if (podeEditar) { h += '<button type="button" class="' + P + 'btn ' + P + 'btn-primario" data-ed="nova-secao"><i class="ti ti-plus"></i> Secao</button>'; }
+        if (podeEditar) { h += '<button type="button" class="' + P + 'btn ' + P + 'btn-mini" data-ed="nova-secao" title="Adicionar secao"><i class="ti ti-plus"></i> Secao</button>'; }
         h += '</div>';
 
         if (!(est.secoes || []).length) {
@@ -301,7 +338,7 @@
             h += '<span class="' + P + 'ed-secao-qtd">' + s.blocos.length + ' item(ns)</span>';
             if (podeEditar) {
                 h += '<span class="' + P + 'ed-acoes">'
-                    + '<button type="button" class="' + P + 'btn ' + P + 'btn-mini" data-ed="nova-pergunta" data-secao="' + s.id + '"><i class="ti ti-plus"></i> Pergunta</button>'
+                    + '<button type="button" class="' + P + 'btn ' + P + 'btn-mini ' + P + 'btn-primario" data-ed="nova-pergunta" data-secao="' + s.id + '" title="Adicionar pergunta nesta secao"><i class="ti ti-plus"></i> Pergunta</button>'
                     + (est.comentarios ? '<button type="button" class="' + P + 'btn ' + P + 'btn-mini" data-ed="novo-comentario" data-secao="' + s.id + '"><i class="ti ti-text-caption"></i> Texto</button>' : '')
                     + '<button type="button" class="' + P + 'btn-icone" data-ed="excluir-secao" data-id="' + s.id + '" title="Excluir secao"><i class="ti ti-trash"></i></button>'
                     + '</span>';
@@ -368,11 +405,10 @@
             var idDesc = uid('sec_desc');
             var cb = construtorCondicoes({ regra: s.visibilidade, origens: est.origens.filter(function (o) { return !s.blocos.some(function (b) { return b.uuid === o.uuid; }); }), tipo: 'visibilidade' });
             ed.innerHTML = '<div class="' + P + 'campo"><label>Nome da secao</label><input type="text" class="' + P + 'input" data-f="nome" value="' + esc(s.nome) + '"></div>'
-                + '<div class="' + P + 'campo"><label>Descricao</label>' + richHtml(idDesc, '') + '</div>'
+                + richSanfona(idDesc, 'Descricao da secao', s.descricao)
                 + '<div class="' + P + 'campo"><label><i class="ti ti-eye-check"></i> Visibilidade da secao</label><div data-cb></div></div>'
                 + botoesEditor();
             ed.querySelector('[data-cb]').appendChild(cb.el);
-            iniciarRich(idDesc, s.descricao);
             ligarBotoes(ed, function () {
                 var nome = ed.querySelector('[data-f="nome"]').value.trim();
                 if (!nome) { U().toast('Informe o nome da secao.', false); return Promise.resolve(false); }
@@ -443,12 +479,11 @@
                 + '</div>'
                 + '<div class="' + P + 'ed-switches">' + switchHtml('obrigatoria', 'Resposta obrigatoria', p.obrigatoria) + '<span data-sw-extra></span></div>'
                 + '<div data-tipo-config></div>'
-                + '<div class="' + P + 'campo"><label>Descricao / ajuda (aparece abaixo da pergunta)</label>' + richHtml(idDesc, '') + '</div>'
+                + richSanfona(idDesc, 'Descricao / ajuda (aparece abaixo da pergunta)', p.descricao)
                 + '<div class="' + P + 'campo" data-padrao-wrap><label>Valor padrao</label><div data-padrao></div></div>'
                 + '<div class="' + P + 'campo" data-val-wrap><label><i class="ti ti-checks"></i> Validacao da resposta</label><div data-val></div></div>'
                 + '<div class="' + P + 'campo" data-vis-wrap><label><i class="ti ti-eye-check"></i> Visibilidade da pergunta</label><div data-vis></div></div>'
                 + botoesEditor();
-            iniciarRich(idDesc, p.descricao);
 
             var selT = ed.querySelector('[data-f="tipo"]');
             var cbVis = null, cbVal = null;

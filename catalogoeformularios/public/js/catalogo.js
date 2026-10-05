@@ -1976,8 +1976,20 @@ var _previewTimer  = null;
         var editar = !!sec;
         var idDesc = 'sec_rich_' + Date.now();
         var m = abrirModal({ titulo: '<i class="ti ti-layout-list"></i> ' + (editar ? 'Editar secao' : 'Nova secao') });
-        m.body.innerHTML = campoTexto('sec_nome', 'Nome', editar ? sec.nome : '', true) + campoRich(idDesc, 'Descricao') + blocoErro();
-        m.initRich(idDesc, editar ? sec.descricao : '');
+        // Descricao em bloco fechado; o editor rico so e criado ao abrir
+        m.body.innerHTML = campoTexto('sec_nome', 'Nome', editar ? sec.nome : '', true)
+            + blocoExpansivel('exp_sec_desc', 'ti ti-notes', 'Descricao da secao', campoRich(idDesc, '')) + blocoErro();
+        var richSecIniciado = false;
+        var taSec = document.getElementById(idDesc);
+        if (taSec && editar) { taSec.value = sec.descricao || ''; }
+        m.body.querySelector('.catalogoeformularios-exp-cab').addEventListener('click', function () {
+            var bloco = this.closest('.catalogoeformularios-exp');
+            var corpo = bloco.querySelector('.catalogoeformularios-exp-corpo');
+            var abrindo = corpo.style.display === 'none';
+            corpo.style.display = abrindo ? 'block' : 'none';
+            bloco.classList.toggle('aberto', abrindo);
+            if (abrindo && !richSecIniciado) { richSecIniciado = true; m.initRich(idDesc, editar ? sec.descricao : ''); }
+        });
         m.foot.appendChild(botaoFoot('Cancelar', '', m.fechar));
         m.foot.appendChild(botaoFoot('<i class="ti ti-device-floppy"></i> Salvar', 'catalogoeformularios-btn-primario', function () {
             var nome = document.getElementById('sec_nome').value.trim();

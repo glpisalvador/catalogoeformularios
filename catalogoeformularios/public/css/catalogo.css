@@ -2810,3 +2810,17 @@ span.catalogoeformularios-form-linha-ic { display: inline-flex; align-items: cen
 .catalogoeformularios-pn .catalogoeformularios-cb-linha .catalogoeformularios-select,
 .catalogoeformularios-pn .catalogoeformularios-cb-linha .catalogoeformularios-input { width: auto; }
 .catalogoeformularios-pn .catalogoeformularios-cb-estr { width: auto; }
+
+/* Descricao / cabecalho em acordeao fechado */
+.catalogoeformularios-ed-sanfona { border: 1px solid #e0e0e0; border-radius: 4px; margin: 0 0 10px 0; background: #fff; }
+.catalogoeformularios-ed-sanfona-cab {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 6px 10px; border: 0; background: #f8f9fa; border-radius: 4px;
+    font-size: 12px; font-weight: 600; color: #495057; text-align: left; cursor: pointer;
+}
+.catalogoeformularios-ed-sanfona-cab:hover { background: #fff3cd; }
+.catalogoeformularios-ed-sanfona.aberta .catalogoeformularios-ed-sanfona-cab { border-bottom: 1px solid #e9ecef; border-radius: 4px 4px 0 0; }
+.catalogoeformularios-ed-sanfona-cab .catalogoeformularios-ed-badge,
+.catalogoeformularios-ed-sanfona-vazio { margin-left: auto; }
+.catalogoeformularios-ed-sanfona-vazio { font-size: 11px; font-weight: 400; color: #999; }
+.catalogoeformularios-ed-sanfona-corpo { padding: 8px; }
