@@ -253,7 +253,7 @@
         var optEnt = (CFG().entidades || []).map(function (e) { return { v: e.id, t: e.nome }; });
         if (!optEnt.some(function (o) { return o.v === f.entidade; })) { optEnt.unshift({ v: f.entidade, t: f.entidade_nome || ('#' + f.entidade) }); }
         if (podeEditar) {
-            h += u.campoSelectBusca(uid('ge_ent'), 'Entidade', optEnt, f.entidade).replace('<div class="' + P + 'selbusca">', '<div class="' + P + 'selbusca" data-ge-ent>');
+            h += u.campoSelectBusca(uid('ge_ent'), 'Entidade (do formulario e do chamado gerado)', optEnt, f.entidade).replace('<div class="' + P + 'selbusca">', '<div class="' + P + 'selbusca" data-ge-ent>');
         } else {
             h += '<div class="' + P + 'campo"><label>Entidade</label><div class="' + P + 'ed-leitura"><i class="ti ti-building"></i> ' + esc(f.entidade_nome || '') + '</div></div>';
         }

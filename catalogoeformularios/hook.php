@@ -94,6 +94,17 @@ function plugin_catalogoeformularios_install(): bool
         }
     }
 
+    // Uma vez: os chamados dos formularios existentes passam a usar a entidade do formulario
+    $marca = 'migracao_entidade_chamado_v2';
+    $feita = $DB->request(['COUNT' => 'total', 'FROM' => $tabela, 'WHERE' => ['name' => $marca]])->current();
+    if ((int) ($feita['total'] ?? 0) === 0 && $DB->tableExists('glpi_forms_forms')) {
+        include_once __DIR__ . '/inc/destino.class.php';
+        foreach ($DB->request(['SELECT' => ['id'], 'FROM' => 'glpi_forms_forms']) as $form) {
+            PluginCatalogoeformulariosDestino::entidadeDoFormulario((int) $form['id']);
+        }
+        $DB->insert($tabela, ['name' => $marca, 'value' => '1']);
+    }
+
     return true;
 }
 

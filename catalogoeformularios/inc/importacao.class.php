@@ -1339,6 +1339,8 @@ class PluginCatalogoeformulariosImportacao extends CommonGLPI
                     $rel['pendencias'][] = 'Formulario "' . $nome . '": falha ao importar um destino.';
                 }
             }
+            // O chamado gerado fica na entidade escolhida para o formulario importado
+            PluginCatalogoeformulariosDestino::entidadeDoFormulario((int) $novoId);
         }
 
         // Controle de acesso.

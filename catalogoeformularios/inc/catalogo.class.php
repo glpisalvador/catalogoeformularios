@@ -1055,6 +1055,9 @@ class PluginCatalogoeformulariosCatalogo extends CommonGLPI
             return ['ok' => false, 'msg' => 'Falha ao criar o formulario.'];
         }
 
+        // O chamado gerado fica na entidade do formulario
+        PluginCatalogoeformulariosDestino::entidadeDoFormulario((int) $id);
+
         // Categoria ITIL e grupos observadores no destino de Ticket padrao do formulario.
         $catItil   = (int) ($d['categoria_itil'] ?? 0);
         $gruposObs = array_values(array_filter(array_map('intval', $d['observador_grupos'] ?? [])));
