@@ -2841,3 +2841,14 @@ span.catalogoeformularios-form-linha-ic { display: inline-flex; align-items: cen
 /* Aba Geral: icone por ultimo, na largura toda */
 .catalogoeformularios-ge-icone { margin-top: 4px; }
 .catalogoeformularios-ge-icone .catalogoeformularios-ilus-grade { max-height: 170px; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); }
+
+/* Aba Geral unificada (3.0.3): blocos, acordeoes de atores e de textos */
+.catalogoeformularios-ge-secao { margin: 6px 0 12px 0; }
+.catalogoeformularios-ge-secao-tit { display: flex; align-items: center; gap: 6px; margin: 0 0 6px 0; padding-bottom: 4px; border-bottom: 1px solid #e9ecef; font-size: 12px; font-weight: 600; color: #495057; }
+.catalogoeformularios-ge-secao-tit i { color: #6c757d; }
+.catalogoeformularios-ed-sanfona-lado { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; min-width: 0; font-weight: 400; }
+.catalogoeformularios-ed-sanfona-cab > i:not(.ti-chevron-right):not(.ti-chevron-down) { color: #c98a36; }
+.catalogoeformularios-ed-sanfona-cab .catalogoeformularios-pn-tag { font-size: 11px; }
+.catalogoeformularios-ed-sanfona .catalogoeformularios-ed-sanfona { margin-bottom: 6px; }
+[data-ge-atores] .catalogoeformularios-ed-sanfona { margin-bottom: 6px; }
+[data-ge-estrutura] > .catalogoeformularios-ed-barra { margin-top: 0; }
