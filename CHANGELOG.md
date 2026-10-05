@@ -2,6 +2,15 @@
 
 O arquivo para download de cada versão está em [Releases](https://github.com/glpisalvador/catalogoeformularios/releases).
 
+## 3.0.5 — 2026-10-05
+
+- A barra de título do acordeão do formulário fica sempre em **uma linha**.
+  - Selos compactos (ícone + valor; o nome aparece ao passar o mouse). Selos sem valor mostram só o ícone.
+  - Rótulos e contadores se escondem automaticamente quando o painel é estreito.
+- O cartão **"Estrutura e ações"** subiu para a barra:
+  - contadores de seções, perguntas, destinos e envios;
+  - menu ⋮ com Editar, Seções, Duplicar, Recarregar, Abrir no editor nativo e Excluir.
+
 ## 3.0.4 — 2026-10-05
 
 - A **entidade escolhida na aba Geral** passa a ser a entidade do chamado gerado. Todos os destinos usam a estratégia nativa "From form": ao salvar a aba Geral, ao criar ou importar formulário, ao criar destino e, uma única vez na instalação, nos formulários existentes.

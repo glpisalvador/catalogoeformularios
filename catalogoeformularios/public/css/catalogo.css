@@ -2852,3 +2852,41 @@ span.catalogoeformularios-form-linha-ic { display: inline-flex; align-items: cen
 .catalogoeformularios-ed-sanfona .catalogoeformularios-ed-sanfona { margin-bottom: 6px; }
 [data-ge-atores] .catalogoeformularios-ed-sanfona { margin-bottom: 6px; }
 [data-ge-estrutura] > .catalogoeformularios-ed-barra { margin-top: 0; }
+
+/* Barra de titulo do acordeao em UMA linha (3.0.5): selos encolhem com reticencias */
+.catalogoeformularios-pn-cab { flex-wrap: nowrap; gap: 10px; min-height: 40px; }
+.catalogoeformularios-pn-cab > * { flex-shrink: 0; }
+.catalogoeformularios-pn-cab .catalogoeformularios-pn-chips { flex: 1 1 auto; flex-shrink: 1; min-width: 0; flex-wrap: nowrap; overflow: hidden; gap: 5px; }
+.catalogoeformularios-pn-cab .catalogoeformularios-pn-chip { flex: 0 1 auto; min-width: 26px; max-width: 170px; padding: 1px 7px; gap: 4px; white-space: nowrap; line-height: 16px; }
+.catalogoeformularios-pn-cab-acoes { flex-wrap: nowrap; gap: 6px; margin-left: 0; }
+.catalogoeformularios-pn-cab .catalogoeformularios-pn-switch { gap: 5px; white-space: nowrap; }
+.catalogoeformularios-pn-cab .catalogoeformularios-pn-switch .trilho { width: 28px; height: 15px; }
+.catalogoeformularios-pn-cab .catalogoeformularios-pn-switch .trilho::before { width: 11px; height: 11px; }
+.catalogoeformularios-pn-cab .catalogoeformularios-pn-switch input:checked + .trilho::before { transform: translateX(13px); }
+.catalogoeformularios-pn-cab .catalogoeformularios-pn-layout { max-width: 112px; }
+.catalogoeformularios-pn-metr { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: #6c757d; white-space: nowrap; }
+.catalogoeformularios-pn-metr span { display: inline-flex; align-items: center; gap: 3px; }
+.catalogoeformularios-pn-metr b { font-weight: 600; color: #495057; }
+.catalogoeformularios-pn-metr .alerta i { color: #664d03; }
+.catalogoeformularios-pn-sep { width: 1px; height: 18px; background: #dee2e6; }
+.catalogoeformularios-pn-cab .catalogoeformularios-btn-icone { width: 26px; height: 26px; }
+.catalogoeformularios-pn-cab .catalogoeformularios-btn-icone.perigo:hover { color: #dc3545; border-color: rgba(220, 53, 69, 0.4); }
+.catalogoeformularios-pn-cab.estreita .rot-opc { display: none; }
+.catalogoeformularios-pn-cab.muito-estreita .catalogoeformularios-pn-metr { display: none; }
+.catalogoeformularios-pn-cab { overflow: visible; }
+.catalogoeformularios-pn-menu-wrap { position: relative; display: inline-flex; }
+.catalogoeformularios-pn-menu {
+    position: absolute; top: calc(100% + 4px); right: 0; z-index: 30;
+    display: flex; flex-direction: column; min-width: 190px; padding: 4px 0;
+    background: #fff; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.catalogoeformularios-pn-menu[hidden] { display: none; }
+.catalogoeformularios-pn-menu > button,
+.catalogoeformularios-pn-menu > a {
+    display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+    border: 0; background: none; font-size: 12px; color: #495057; text-align: left; text-decoration: none; cursor: pointer; white-space: nowrap;
+}
+.catalogoeformularios-pn-menu > button:hover,
+.catalogoeformularios-pn-menu > a:hover { background: #f8f9fa; }
+.catalogoeformularios-pn-menu > .perigo { color: #dc3545; border-top: 1px solid #f0f0f0; }
+.catalogoeformularios-pn-menu > .perigo:hover { background: rgba(220, 53, 69, 0.06); }
