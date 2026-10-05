@@ -265,13 +265,13 @@
         h += '</div>';
         h += botaoSalvar;
 
-        // 2. Atores do chamado: um acordeao fechado por ator
-        h += '<div class="' + P + 'ge-secao"><span class="' + P + 'ge-secao-tit"><i class="ti ti-users"></i> Atores do chamado gerado</span>'
-            + '<div data-ge-atores><span class="' + P + 'pn-vazio-txt">carregando...</span></div></div>';
-
-        // 3. Estrutura do formulario (secoes, perguntas, condicoes, botao Enviar)
+        // 2. Estrutura do formulario (secoes, perguntas, condicoes, botao Enviar)
         h += '<div class="' + P + 'ge-secao"><span class="' + P + 'ge-secao-tit"><i class="ti ti-layout-list"></i> Estrutura do formulario</span>'
             + '<div data-ge-estrutura><div class="' + P + 'pn-carregando"><i class="ti ti-loader"></i> Carregando...</div></div></div>';
+
+        // 3. Atores do chamado: um acordeao fechado por ator
+        h += '<div class="' + P + 'ge-secao"><span class="' + P + 'ge-secao-tit"><i class="ti ti-users"></i> Atores do chamado gerado</span>'
+            + '<div data-ge-atores><span class="' + P + 'pn-vazio-txt">carregando...</span></div></div>';
 
         // 4. Descricao, cabecalho e icone num unico acordeao fechado
         var preenchidos = [];

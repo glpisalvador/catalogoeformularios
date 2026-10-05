@@ -2,6 +2,10 @@
 
 O arquivo para download de cada versão está em [Releases](https://github.com/glpisalvador/catalogoeformularios/releases).
 
+## 3.0.6 — 2026-10-05
+
+- Na aba Geral, a **Estrutura do formulário** passou a vir antes dos **Atores do chamado gerado**.
+
 ## 3.0.5 — 2026-10-05
 
 - A barra de título do acordeão do formulário fica sempre em **uma linha**.
